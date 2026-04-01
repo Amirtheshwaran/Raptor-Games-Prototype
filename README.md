@@ -1,6 +1,6 @@
 # Raptor Portal
 
-![Project Demo](file:///C:/Users/Amirthesh/.gemini/antigravity/brain/33f31d3f-3891-4c65-84dd-741c01268597/app_demo_recording_1775002195105.webp)
+![Project Demo](docs/demo.webp)
 
 A strictly local, React and Vite-powered browser game portal demo designed for class presentations. The UI mimics classic Flash portal density while utilizing a modern, dark, Friv-inspired layout.
 
@@ -9,7 +9,7 @@ Powered by the [Ruffle](https://ruffle.rs/) WebAssembly emulator.
 ## Interface Previews
 | Action Games | Puzzle Games | Racing Games |
 |:---:|:---:|:---:|
-| ![Action Thumbnail](file:///C:/Users/Amirthesh/.gemini/antigravity/brain/33f31d3f-3891-4c65-84dd-741c01268597/game_1_thumb_1775001359723.png) | ![Puzzle Thumbnail](file:///C:/Users/Amirthesh/.gemini/antigravity/brain/33f31d3f-3891-4c65-84dd-741c01268597/game_2_thumb_1775001430673.png) | ![Racing Thumbnail](file:///C:/Users/Amirthesh/.gemini/antigravity/brain/33f31d3f-3891-4c65-84dd-741c01268597/game_3_thumb_1775001447131.png) |
+| ![Action Thumbnail](public/games/game-one/thumb.png) | ![Puzzle Thumbnail](public/games/game-two/thumb.png) | ![Racing Thumbnail](public/games/game-three/thumb.png) |
 
 ## Prerequisites
 - Node.js 18+
