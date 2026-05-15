@@ -1,42 +1,48 @@
-# Raptor Portal
+# 🦖 Raptor Games
 
-A small React + Vite browser game portal prototype that loads local assets using Ruffle. Built as a class demo to explore UI design for Flash-style game portals.
+A free online game portal built as a personal project. Play 45+ classic browser games instantly — no downloads, no sign-up, no ads.
 
-## How to Run
+**[▶ Play Now → Live Site](https://amirtheshwaran.github.io/Raptor-Games-Prototype/)**
 
-1. Clone or download the repository.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Copy local emulator files: Download [Ruffle Web Standalone](https://ruffle.rs/#releases), and extract the contents to the `public/ruffle/` directory. (You should now have a file at `public/ruffle/ruffle.js`).
-4. Start the frontend:
-   ```bash
-   npm run dev
-   ```
+---
 
-## Adding Games
+## Features
 
-To configure the catalog, simply copy your local game assets into the `public` directory, and link them inside the central metadata source. 
+- **45+ games** across 7 categories — IO, Puzzle, Action, Racing, Sports, Strategy, Adventure
+- **In-browser play** for select games (no redirect needed)
+- **Category filtering** and **live search**
+- **Random game** button
+- Fully **responsive** — works on desktop and mobile
+- Single `index.html` — zero dependencies, zero build steps
 
-1. Create a folder for the game inside `public/games/` (e.g. `public/games/your-game/`).
-2. Place the `.swf` file and a thumbnail `.png` inside your new folder.
-3. Open `src/data/catalog.ts` and add your entry:
+## Categories
 
-```typescript
-export const games = [
-  {
-    id: 'your-game',
-    title: 'Your Game Title',
-    genre: 'Platformer',
-    year: 2012,
-    description: 'A platformer demonstrating the layout.',
-    controls: 'Arrow keys navigate.',
-    thumbnail: '/games/your-game/thumb.png',
-    filePath: '/games/your-game/game.swf',
-    relatedSlugs: []
-  }
-];
+| Category | Games |
+|----------|-------|
+| 🌐 IO Games | Slither.io, Agar.io, Krunker.io, Paper.io 2, and more |
+| 🧩 Puzzle | 2048, Tetris, Chess, Wordle, Sudoku, and more |
+| ⚡ Action | Subway Surfers, Minecraft Classic, Run 3, PAC-MAN, and more |
+| 🏎️ Racing | Drift Hunters, Madalin Stunt Cars 2, Hill Climb Racing, and more |
+| ⚽ Sports | 8 Ball Pool, Basketball Stars, Penalty Shootout, and more |
+| ♟️ Strategy | Bloons TD 6, Kingdom Rush, Age of War, and more |
+| 🗺️ Adventure | Geometry Dash, Papa's Pizzeria, Among Us, Cut the Rope, and more |
+
+## Tech Stack
+
+- Pure **HTML + CSS + JavaScript** — single file, no frameworks
+- **Google Fonts** (Bebas Neue + Plus Jakarta Sans)
+- Hosted on **GitHub Pages**
+
+## Running Locally
+
+No build step needed. Just open `index.html` in any browser.
+
+```bash
+git clone https://github.com/Amirtheshwaran/Raptor-Games-Prototype.git
+cd Raptor-Games-Prototype
+# open index.html in your browser
 ```
 
-The portal automatically parses `src/data/catalog.ts` and safely removes broken entries if files are misconfigured.
+---
+
+> All games are property of their respective owners. Raptor Games links to official game websites and does not host any game files.
