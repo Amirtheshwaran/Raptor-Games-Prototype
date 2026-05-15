@@ -1,1 +1,0 @@
-console.warn('Please download real Ruffle Web Standalone and place contents here (overwrite this file).');
