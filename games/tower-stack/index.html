@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tower Stack</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body { background: #120924; color: #fff; font-family: system-ui, sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+  #wrap { position: relative; width: 100%; height: 100%; max-width: 480px; max-height: 680px; aspect-ratio: 480/680; background: linear-gradient(to bottom, #10061e, #2a0b3b); border: 1px solid #3c1652; box-shadow: 0 0 25px rgba(255,64,129,0.2); }
+  canvas { width: 100%; height: 100%; display: block; }
+  .hud { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem; pointer-events: none; z-index: 10; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+  .sc { color: #ff4081; }
+  .hs { color: #ffd600; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="hud">
+    <div class="sc">HEIGHT: <span id="sc">0</span></div>
+    <div class="hs">RECORD: <span id="hs">0</span></div>
+  </div>
+  <canvas id="c" width="480" height="680"></canvas>
+</div>
+
+<script>
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const scEl = document.getElementById('sc'), hsEl = document.getElementById('hs');
+const GAME_ID = 'tower-stack';
+let highScore = parseInt(localStorage.getItem('raptor_hs_' + GAME_ID) || '0', 10);
+hsEl.textContent = highScore;
+
+let actx = null;
+function snd(freq = 440) {
+  try {
+    if (localStorage.getItem('raptor_muted') === 'true') return;
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const t = actx.currentTime;
+    const osc = actx.createOscillator(), g = actx.createGain();
+    osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(0.09, t); g.gain.linearRampToValueAtTime(0, t + 0.15);
+    osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.15);
+  } catch(e){}
+}
+
+const BASE_WIDTH = 220, BLOCK_HEIGHT = 28;
+let stack = [], current = null, falling = null;
+let score = 0, state = 'start', dir = 1, speed = 4, combo = 0, cameraY = 0;
+
+function getColor(index) {
+  const hue = (index * 14 + 280) % 360;
+  return `hsl(${hue}, 80%, 60%)`;
+}
+
+function resetGame() {
+  stack = [{ x: 130, y: 560, w: BASE_WIDTH, color: getColor(0) }];
+  score = 0; scEl.textContent = '0';
+  speed = 4; combo = 0; cameraY = 0;
+  spawnNext();
+  state = 'play';
+}
+
+function spawnNext() {
+  const top = stack[stack.length - 1];
+  const color = getColor(stack.length);
+  current = {
+    x: 0,
+    y: top.y - BLOCK_HEIGHT,
+    w: top.w,
+    color,
+    dir: 1
+  };
+}
+
+function placeBlock() {
+  if (state !== 'play') { resetGame(); return; }
+  const top = stack[stack.length - 1];
+  const diff = current.x - top.x;
+
+  if (Math.abs(diff) <= 4) {
+    // Perfect match!
+    combo++;
+    current.x = top.x; // snap
+    snd(350 + combo * 40);
+    stack.push(current);
+    score++;
+    scEl.textContent = score;
+    spawnNext();
+  } else if (Math.abs(diff) < top.w) {
+    // Overhang slice
+    combo = 0;
+    snd(320);
+    const newW = top.w - Math.abs(diff);
+    const newX = diff > 0 ? current.x : top.x;
+    const fallW = Math.abs(diff);
+    const fallX = diff > 0 ? current.x + newW : current.x;
+
+    falling = { x: fallX, y: current.y, w: fallW, color: current.color, vy: 2 };
+    current.w = newW;
+    current.x = newX;
+    stack.push(current);
+    score++;
+    scEl.textContent = score;
+    speed = Math.min(8, 4 + score * 0.12);
+    spawnNext();
+  } else {
+    // Complete miss! Game over
+    state = 'over';
+    falling = { x: current.x, y: current.y, w: current.w, color: current.color, vy: 3 };
+    if (score > highScore) {
+      highScore = score;
+      localStorage.setItem('raptor_hs_' + GAME_ID, highScore);
+      hsEl.textContent = highScore;
+      try { if (window.parent && window.parent.onHighScoreUpdate) window.parent.onHighScoreUpdate(GAME_ID, highScore); } catch(e){}
+    }
+  }
+}
+
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); placeBlock(); }
+  if (e.code === 'KeyR') resetGame();
+});
+cv.addEventListener('click', placeBlock);
+cv.addEventListener('touchstart', e => { e.preventDefault(); placeBlock(); });
+
+function update() {
+  if (state === 'play' && current) {
+    current.x += current.dir * speed;
+    if (current.x <= 0) { current.x = 0; current.dir = 1; }
+    else if (current.x + current.w >= 480) { current.x = 480 - current.w; current.dir = -1; }
+  }
+  // Camera follow
+  const targetCam = stack.length > 5 ? (stack.length - 5) * BLOCK_HEIGHT : 0;
+  cameraY += (targetCam - cameraY) * 0.1;
+
+  // Falling block physics
+  if (falling) {
+    falling.y += falling.vy;
+    falling.vy += 0.5;
+    if (falling.y > 800) falling = null;
+  }
+}
+
+function draw() {
+  ctx.fillStyle = '#10061e';
+  ctx.fillRect(0, 0, 480, 680);
+
+  ctx.save();
+  ctx.translate(0, cameraY);
+
+  // Stacked blocks
+  stack.forEach(b => {
+    ctx.fillStyle = b.color;
+    ctx.fillRect(b.x, b.y, b.w, BLOCK_HEIGHT);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillRect(b.x, b.y, b.w, 4);
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(b.x, b.y + BLOCK_HEIGHT - 4, b.w, 4);
+  });
+
+  // Current sliding block
+  if (state === 'play' && current) {
+    ctx.fillStyle = current.color;
+    ctx.fillRect(current.x, current.y, current.w, BLOCK_HEIGHT);
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.fillRect(current.x, current.y, current.w, 4);
+  }
+
+  // Falling sliced block
+  if (falling) {
+    ctx.fillStyle = falling.color;
+    ctx.fillRect(falling.x, falling.y, falling.w, BLOCK_HEIGHT);
+  }
+
+  ctx.restore();
+
+  // Overlays
+  if (state === 'start') {
+    ctx.fillStyle = 'rgba(12, 6, 26, 0.85)';
+    ctx.fillRect(0, 0, 480, 680);
+    ctx.fillStyle = '#ff4081'; ctx.font = '900 36px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('TOWER STACK', 240, 290);
+    ctx.fillStyle = '#fff'; ctx.font = '600 16px system-ui';
+    ctx.fillText('TAP OR PRESS SPACE TO PLACE', 240, 335);
+  } else if (state === 'over') {
+    ctx.fillStyle = 'rgba(12, 6, 26, 0.85)';
+    ctx.fillRect(0, 0, 480, 680);
+    ctx.fillStyle = '#ff1744'; ctx.font = '900 38px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('TOWER COLLAPSED', 240, 270);
+    ctx.fillStyle = '#fff'; ctx.font = '700 22px system-ui';
+    ctx.fillText('HEIGHT REACHED: ' + score, 240, 320);
+    ctx.fillStyle = '#ffd600'; ctx.font = '600 18px system-ui';
+    ctx.fillText('RECORD: ' + highScore, 240, 355);
+    ctx.fillStyle = '#00e5ff'; ctx.font = '600 16px system-ui';
+    ctx.fillText('CLICK TO REBUILD', 240, 410);
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+window.addEventListener('message', e => {
+  if (e.data === 'restart') resetGame();
+});
+</script>
+</body>
+</html>

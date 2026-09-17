@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Hex Block Puzzle</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body { background: #0a0f1d; color: #fff; font-family: system-ui, sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+  #wrap { width: 100%; max-width: 480px; height: 100%; max-height: 640px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+  .hud { width: 100%; display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem; }
+  .sc { color: #ffd600; }
+  .hs { color: #00e5ff; }
+  #grid { width: 100%; max-width: 360px; aspect-ratio: 1/1; background: #141b2d; border: 2px solid #263353; border-radius: 8px; display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; padding: 6px; }
+  .cell { background: #1c2742; border-radius: 4px; transition: background 0.15s ease; cursor: pointer; }
+  .cell.filled { background: #ff1744; box-shadow: 0 0 6px rgba(255,23,68,0.5); }
+  .tray { display: flex; gap: 14px; width: 100%; justify-content: center; height: 90px; }
+  .piece-box { flex: 1; background: #141b2d; border: 1px solid #263353; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s; }
+  .piece-box:hover { border-color: #ffd600; transform: scale(1.05); }
+  .piece-box.selected { border-color: #00e5ff; background: #1e2c4d; }
+  .p-canvas { width: 60px; height: 60px; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="hud">
+    <div class="sc">SCORE: <span id="sc">0</span></div>
+    <button onclick="newGame()" style="background:#ffd600; color:#000; border:none; padding:5px 12px; border-radius:4px; font-weight:bold; cursor:pointer;">NEW</button>
+    <div class="hs">BEST: <span id="hs">0</span></div>
+  </div>
+  <div id="grid"></div>
+  <div class="tray" id="tray"></div>
+</div>
+
+<script>
+const gridEl = document.getElementById('grid'), trayEl = document.getElementById('tray');
+const scEl = document.getElementById('sc'), hsEl = document.getElementById('hs');
+const GAME_ID = 'hex-puzzle';
+let highScore = parseInt(localStorage.getItem('raptor_hs_' + GAME_ID) || '0', 10);
+hsEl.textContent = highScore;
+
+const GRID_SIZE = 10;
+let grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
+let score = 0, trayPieces = [], selectedPiece = null;
+
+const SHAPES = [
+  { m: [[1]], c: '#00e5ff' },
+  { m: [[1,1]], c: '#ffd600' },
+  { m: [[1],[1]], c: '#ffd600' },
+  { m: [[1,1,1]], c: '#ff1744' },
+  { m: [[1],[1],[1]], c: '#ff1744' },
+  { m: [[1,1],[1,1]], c: '#00e676' },
+  { m: [[1,1,1],[0,1,0]], c: '#d500f9' },
+  { m: [[1,0],[1,0],[1,1]], c: '#ff9100' }
+];
+
+function initGrid() {
+  gridEl.innerHTML = '';
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = `gc-${r}-${c}`;
+      cell.onclick = () => placeAt(r, c);
+      gridEl.appendChild(cell);
+    }
+  }
+}
+
+function newGame() {
+  grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
+  score = 0; scEl.textContent = '0';
+  selectedPiece = null;
+  initGrid();
+  spawnTray();
+  render();
+}
+
+function spawnTray() {
+  trayPieces = [
+    SHAPES[Math.floor(Math.random() * SHAPES.length)],
+    SHAPES[Math.floor(Math.random() * SHAPES.length)],
+    SHAPES[Math.floor(Math.random() * SHAPES.length)]
+  ];
+  renderTray();
+}
+
+function renderTray() {
+  trayEl.innerHTML = '';
+  trayPieces.forEach((p, idx) => {
+    if (!p) {
+      const empty = document.createElement('div'); empty.className = 'piece-box';
+      trayEl.appendChild(empty); return;
+    }
+    const box = document.createElement('div');
+    box.className = 'piece-box' + (selectedPiece === idx ? ' selected' : '');
+    const cv = document.createElement('canvas');
+    cv.className = 'p-canvas'; cv.width = 60; cv.height = 60;
+    const ctx = cv.getContext('2d');
+    const size = 14;
+    const offX = (60 - p.m[0].length * size) / 2, offY = (60 - p.m.length * size) / 2;
+    ctx.fillStyle = p.c;
+    p.m.forEach((row, r) => row.forEach((v, c) => {
+      if (v) ctx.fillRect(offX + c * size, offY + r * size, size - 2, size - 2);
+    }));
+    box.onclick = () => { selectedPiece = idx; renderTray(); };
+    box.appendChild(cv);
+    trayEl.appendChild(box);
+  });
+}
+
+function placeAt(r, c) {
+  if (selectedPiece === null || !trayPieces[selectedPiece]) return;
+  const p = trayPieces[selectedPiece];
+
+  // Check can place
+  for (let pr = 0; pr < p.m.length; pr++) {
+    for (let pc = 0; pc < p.m[pr].length; pc++) {
+      if (p.m[pr][pc]) {
+        const gr = r + pr, gc = c + pc;
+        if (gr >= GRID_SIZE || gc >= GRID_SIZE || grid[gr][gc] !== 0) return;
+      }
+    }
+  }
+
+  // Place
+  let blocksPlaced = 0;
+  for (let pr = 0; pr < p.m.length; pr++) {
+    for (let pc = 0; pc < p.m[pr].length; pc++) {
+      if (p.m[pr][pc]) {
+        grid[r + pr][c + pc] = p.c;
+        blocksPlaced++;
+      }
+    }
+  }
+  score += blocksPlaced;
+  trayPieces[selectedPiece] = null;
+  selectedPiece = null;
+
+  clearLines();
+
+  if (trayPieces.every(tp => tp === null)) spawnTray();
+  else renderTray();
+
+  render();
+}
+
+function clearLines() {
+  let fullRows = [], fullCols = [];
+  for (let r = 0; r < GRID_SIZE; r++) {
+    if (grid[r].every(v => v !== 0)) fullRows.push(r);
+  }
+  for (let c = 0; c < GRID_SIZE; c++) {
+    if (grid.every(row => row[c] !== 0)) fullCols.push(c);
+  }
+  fullRows.forEach(r => { for (let c = 0; c < GRID_SIZE; c++) grid[r][c] = 0; });
+  fullCols.forEach(c => { for (let r = 0; r < GRID_SIZE; r++) grid[r][c] = 0; });
+
+  const cleared = fullRows.length + fullCols.length;
+  if (cleared > 0) {
+    score += cleared * 100;
+    scEl.textContent = score;
+    if (score > highScore) {
+      highScore = score;
+      localStorage.setItem('raptor_hs_' + GAME_ID, highScore);
+      hsEl.textContent = highScore;
+      try { if (window.parent && window.parent.onHighScoreUpdate) window.parent.onHighScoreUpdate(GAME_ID, highScore); } catch(e){}
+    }
+  }
+}
+
+function render() {
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const el = document.getElementById(`gc-${r}-${c}`);
+      if (grid[r][c]) {
+        el.className = 'cell filled';
+        el.style.background = grid[r][c];
+      } else {
+        el.className = 'cell';
+        el.style.background = '';
+      }
+    }
+  }
+}
+
+newGame();
+
+window.addEventListener('message', e => {
+  if (e.data === 'restart') newGame();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tetra Blocks</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body { background: #070614; color: #fff; font-family: system-ui, sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+  #wrap { display: flex; gap: 15px; align-items: center; justify-content: center; width: 100%; height: 100%; max-width: 650px; }
+  canvas { background: #100f24; border: 2px solid #2a2850; box-shadow: 0 0 25px rgba(153, 51, 255, 0.2); border-radius: 6px; }
+  .side-panel { display: flex; flex-direction: column; gap: 15px; min-width: 110px; }
+  .box { background: #13122b; border: 1px solid #2a2850; border-radius: 8px; padding: 10px; text-align: center; }
+  .box-lbl { font-size: 0.7rem; font-weight: 800; color: #8c88c0; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .box-val { font-size: 1.25rem; font-weight: 800; color: #fff; font-family: monospace; }
+  .box-canvas { width: 80px; height: 80px; margin: 0 auto; display: block; }
+  .touch-grid { position: fixed; bottom: 8px; left: 0; right: 0; display: none; justify-content: center; gap: 8px; z-index: 50; }
+  .tbtn { width: 48px; height: 44px; border-radius: 6px; background: rgba(30, 25, 65, 0.9); border: 1px solid #7c4dff; color: #fff; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+  @media (max-width: 600px) { .touch-grid { display: flex; } }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="side-panel">
+    <div class="box"><div class="box-lbl">HOLD (C)</div><canvas id="hold-cv" class="box-canvas" width="80" height="80"></canvas></div>
+    <div class="box"><div class="box-lbl">SCORE</div><div class="box-val" id="sc">0</div></div>
+    <div class="box"><div class="box-lbl">LINES</div><div class="box-val" id="ln">0</div></div>
+  </div>
+  <canvas id="board" width="300" height="600"></canvas>
+  <div class="side-panel">
+    <div class="box"><div class="box-lbl">NEXT</div><canvas id="next-cv" class="box-canvas" width="80" height="80"></canvas></div>
+    <div class="box"><div class="box-lbl">LEVEL</div><div class="box-val" id="lv">1</div></div>
+    <div class="box"><div class="box-lbl">BEST</div><div class="box-val" id="hs">0</div></div>
+  </div>
+</div>
+
+<div class="touch-grid">
+  <button class="tbtn" onclick="hold()">H</button>
+  <button class="tbtn" onclick="move(-1)">←</button>
+  <button class="tbtn" onclick="rotate()">↻</button>
+  <button class="tbtn" onclick="move(1)">→</button>
+  <button class="tbtn" onclick="drop()">↓</button>
+  <button class="tbtn" onclick="hardDrop()">⚡</button>
+</div>
+
+<script>
+const cv = document.getElementById('board'), ctx = cv.getContext('2d');
+const nextCv = document.getElementById('next-cv'), nctx = nextCv.getContext('2d');
+const holdCv = document.getElementById('hold-cv'), hctx = holdCv.getContext('2d');
+const scEl = document.getElementById('sc'), lnEl = document.getElementById('ln'), lvEl = document.getElementById('lv'), hsEl = document.getElementById('hs');
+
+const GAME_ID = 'tetra-blocks';
+let highScore = parseInt(localStorage.getItem('raptor_hs_' + GAME_ID) || '0', 10);
+hsEl.textContent = highScore;
+
+// Web Audio
+let actx = null;
+function snd(type) {
+  try {
+    if (localStorage.getItem('raptor_muted') === 'true') return;
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const t = actx.currentTime;
+    const osc = actx.createOscillator(), g = actx.createGain();
+    if (type === 'move') {
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(300, t);
+      g.gain.setValueAtTime(0.04, t); g.gain.linearRampToValueAtTime(0, t + 0.04);
+      osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.04);
+    } else if (type === 'rotate') {
+      osc.type = 'sine'; osc.frequency.setValueAtTime(450, t); osc.frequency.linearRampToValueAtTime(650, t + 0.06);
+      g.gain.setValueAtTime(0.05, t); g.gain.linearRampToValueAtTime(0, t + 0.06);
+      osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.06);
+    } else if (type === 'drop') {
+      osc.type = 'square'; osc.frequency.setValueAtTime(140, t);
+      g.gain.setValueAtTime(0.06, t); g.gain.linearRampToValueAtTime(0, t + 0.07);
+      osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.07);
+    } else if (type === 'clear') {
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(523, t); osc.frequency.setValueAtTime(659, t + 0.08); osc.frequency.setValueAtTime(783, t + 0.16);
+      g.gain.setValueAtTime(0.08, t); g.gain.linearRampToValueAtTime(0, t + 0.25);
+      osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.25);
+    }
+  } catch(e){}
+}
+
+const COLS = 10, ROWS = 20, SIZE = 30;
+let grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+
+const SHAPES = {
+  I: { c: '#00e5ff', m: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]] },
+  J: { c: '#2979ff', m: [[1,0,0],[1,1,1],[0,0,0]] },
+  L: { c: '#ff9100', m: [[0,0,1],[1,1,1],[0,0,0]] },
+  O: { c: '#ffd600', m: [[1,1],[1,1]] },
+  S: { c: '#00e676', m: [[0,1,1],[1,1,0],[0,0,0]] },
+  T: { c: '#d500f9', m: [[0,1,0],[1,1,1],[0,0,0]] },
+  Z: { c: '#ff1744', m: [[1,1,0],[0,1,1],[0,0,0]] }
+};
+const KEYS = Object.keys(SHAPES);
+
+let curPiece = null, curX = 0, curY = 0;
+let nextPieceKey = KEYS[Math.floor(Math.random() * KEYS.length)];
+let holdPieceKey = null, canHold = true;
+let score = 0, lines = 0, level = 1, state = 'start';
+let dropCounter = 0, dropInterval = 45;
+
+function spawnPiece() {
+  const key = nextPieceKey;
+  nextPieceKey = KEYS[Math.floor(Math.random() * KEYS.length)];
+  curPiece = { key, ...SHAPES[key] };
+  curX = Math.floor((COLS - curPiece.m[0].length) / 2);
+  curY = 0;
+  canHold = true;
+
+  if (collides(curX, curY, curPiece.m)) {
+    state = 'over';
+    if (score > highScore) {
+      highScore = score;
+      localStorage.setItem('raptor_hs_' + GAME_ID, highScore);
+      hsEl.textContent = highScore;
+      try { if (window.parent && window.parent.onHighScoreUpdate) window.parent.onHighScoreUpdate(GAME_ID, highScore); } catch(e){}
+    }
+  }
+  drawNext();
+}
+
+function collides(x, y, matrix) {
+  for (let r = 0; r < matrix.length; r++) {
+    for (let c = 0; c < matrix[r].length; c++) {
+      if (matrix[r][c]) {
+        const gx = x + c, gy = y + r;
+        if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+        if (gy >= 0 && grid[gy][gx]) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function rotateMatrix(m) {
+  const N = m.length;
+  const res = Array(N).fill(null).map(() => Array(N).fill(0));
+  for (let r = 0; r < N; r++) {
+    for (let c = 0; c < N; c++) {
+      res[c][N - 1 - r] = m[r][c];
+    }
+  }
+  return res;
+}
+
+function rotate() {
+  if (state !== 'play') return;
+  const rotated = rotateMatrix(curPiece.m);
+  if (!collides(curX, curY, rotated)) {
+    curPiece.m = rotated; snd('rotate');
+  } else if (!collides(curX - 1, curY, rotated)) {
+    curX--; curPiece.m = rotated; snd('rotate');
+  } else if (!collides(curX + 1, curY, rotated)) {
+    curX++; curPiece.m = rotated; snd('rotate');
+  }
+}
+
+function move(dx) {
+  if (state !== 'play') return;
+  if (!collides(curX + dx, curY, curPiece.m)) {
+    curX += dx; snd('move');
+  }
+}
+
+function drop() {
+  if (state !== 'play') return;
+  if (!collides(curX, curY + 1, curPiece.m)) {
+    curY++; score += 1; scEl.textContent = score;
+  } else {
+    lock();
+  }
+}
+
+function hardDrop() {
+  if (state !== 'play') return;
+  let dist = 0;
+  while (!collides(curX, curY + 1, curPiece.m)) {
+    curY++; dist++;
+  }
+  score += dist * 2; scEl.textContent = score;
+  snd('drop');
+  lock();
+}
+
+function hold() {
+  if (state !== 'play' || !canHold) return;
+  canHold = false;
+  if (!holdPieceKey) {
+    holdPieceKey = curPiece.key;
+    spawnPiece();
+  } else {
+    const temp = holdPieceKey;
+    holdPieceKey = curPiece.key;
+    curPiece = { key: temp, ...SHAPES[temp] };
+    curX = Math.floor((COLS - curPiece.m[0].length) / 2);
+    curY = 0;
+  }
+  drawHold();
+}
+
+function lock() {
+  for (let r = 0; r < curPiece.m.length; r++) {
+    for (let c = 0; c < curPiece.m[r].length; c++) {
+      if (curPiece.m[r][c]) {
+        if (curY + r >= 0) grid[curY + r][curX + c] = curPiece.c;
+      }
+    }
+  }
+  clearLines();
+  spawnPiece();
+}
+
+function clearLines() {
+  let cleared = 0;
+  for (let r = ROWS - 1; r >= 0; r--) {
+    if (grid[r].every(val => val !== 0)) {
+      grid.splice(r, 1);
+      grid.unshift(Array(COLS).fill(0));
+      cleared++;
+      r++;
+    }
+  }
+  if (cleared > 0) {
+    snd('clear');
+    lines += cleared;
+    lnEl.textContent = lines;
+    const pts = [0, 100, 300, 500, 800][cleared] * level;
+    score += pts;
+    scEl.textContent = score;
+    level = Math.floor(lines / 10) + 1;
+    lvEl.textContent = level;
+    dropInterval = Math.max(8, 45 - (level - 1) * 4);
+  }
+}
+
+function getGhostY() {
+  let gy = curY;
+  while (!collides(curX, gy + 1, curPiece.m)) gy++;
+  return gy;
+}
+
+function resetGame() {
+  grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(0));
+  score = 0; lines = 0; level = 1; dropInterval = 45;
+  scEl.textContent = '0'; lnEl.textContent = '0'; lvEl.textContent = '1';
+  holdPieceKey = null; canHold = true;
+  drawHold();
+  nextPieceKey = KEYS[Math.floor(Math.random() * KEYS.length)];
+  spawnPiece();
+  state = 'play';
+}
+
+window.addEventListener('keydown', e => {
+  if (state !== 'play') {
+    if (['Space', 'Enter', 'KeyX'].includes(e.code)) resetGame();
+    return;
+  }
+  if (e.code === 'ArrowLeft' || e.code === 'KeyA') { e.preventDefault(); move(-1); }
+  if (e.code === 'ArrowRight' || e.code === 'KeyD') { e.preventDefault(); move(1); }
+  if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'KeyX') { e.preventDefault(); rotate(); }
+  if (e.code === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); drop(); }
+  if (e.code === 'Space') { e.preventDefault(); hardDrop(); }
+  if (e.code === 'KeyC' || e.code === 'ShiftLeft') { e.preventDefault(); hold(); }
+  if (e.code === 'KeyR') resetGame();
+});
+cv.addEventListener('click', () => { if (state !== 'play') resetGame(); });
+
+function drawBlock(c, x, y, color, isGhost = false) {
+  c.save();
+  if (isGhost) {
+    c.strokeStyle = color; c.lineWidth = 1.5; c.strokeRect(x * SIZE + 2, y * SIZE + 2, SIZE - 4, SIZE - 4);
+  } else {
+    c.fillStyle = color;
+    c.fillRect(x * SIZE + 1, y * SIZE + 1, SIZE - 2, SIZE - 2);
+    c.fillStyle = 'rgba(255,255,255,0.25)';
+    c.fillRect(x * SIZE + 2, y * SIZE + 2, SIZE - 4, 3);
+  }
+  c.restore();
+}
+
+function drawNext() {
+  nctx.clearRect(0, 0, 80, 80);
+  const p = SHAPES[nextPieceKey];
+  const offX = (80 - p.m[0].length * 16) / 2, offY = (80 - p.m.length * 16) / 2;
+  p.m.forEach((row, r) => row.forEach((v, c) => {
+    if (v) { nctx.fillStyle = p.c; nctx.fillRect(offX + c * 16, offY + r * 16, 14, 14); }
+  }));
+}
+
+function drawHold() {
+  hctx.clearRect(0, 0, 80, 80);
+  if (!holdPieceKey) return;
+  const p = SHAPES[holdPieceKey];
+  const offX = (80 - p.m[0].length * 16) / 2, offY = (80 - p.m.length * 16) / 2;
+  p.m.forEach((row, r) => row.forEach((v, c) => {
+    if (v) { hctx.fillStyle = p.c; hctx.fillRect(offX + c * 16, offY + r * 16, 14, 14); }
+  }));
+}
+
+function draw() {
+  ctx.fillStyle = '#100f24';
+  ctx.fillRect(0, 0, 300, 600);
+
+  // Subtle grid lines
+  ctx.strokeStyle = '#181734'; ctx.lineWidth = 1;
+  for (let r = 0; r < ROWS; r++) { ctx.beginPath(); ctx.moveTo(0, r * SIZE); ctx.lineTo(300, r * SIZE); ctx.stroke(); }
+  for (let c = 0; c < COLS; c++) { ctx.beginPath(); ctx.moveTo(c * SIZE, 0); ctx.lineTo(c * SIZE, 600); ctx.stroke(); }
+
+  // Board locked blocks
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (grid[r][c]) drawBlock(ctx, c, r, grid[r][c]);
+    }
+  }
+
+  // Active Piece & Ghost
+  if (state === 'play' && curPiece) {
+    const gy = getGhostY();
+    curPiece.m.forEach((row, r) => row.forEach((v, c) => {
+      if (v) drawBlock(ctx, curX + c, gy + r, curPiece.c, true);
+    }));
+    curPiece.m.forEach((row, r) => row.forEach((v, c) => {
+      if (v) drawBlock(ctx, curX + c, curY + r, curPiece.c);
+    }));
+  }
+
+  // Overlays
+  if (state === 'start') {
+    ctx.fillStyle = 'rgba(7, 6, 20, 0.85)';
+    ctx.fillRect(0, 0, 300, 600);
+    ctx.fillStyle = '#d500f9'; ctx.font = '900 28px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('TETRA BLOCKS', 150, 260);
+    ctx.fillStyle = '#fff'; ctx.font = '600 14px system-ui';
+    ctx.fillText('PRESS SPACE TO PLAY', 150, 300);
+  } else if (state === 'over') {
+    ctx.fillStyle = 'rgba(7, 6, 20, 0.9)';
+    ctx.fillRect(0, 0, 300, 600);
+    ctx.fillStyle = '#ff1744'; ctx.font = '900 30px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('GAME OVER', 150, 240);
+    ctx.fillStyle = '#fff'; ctx.font = '700 20px system-ui';
+    ctx.fillText('SCORE: ' + score, 150, 280);
+    ctx.fillStyle = '#ffd600'; ctx.font = '600 16px system-ui';
+    ctx.fillText('BEST: ' + highScore, 150, 315);
+    ctx.fillStyle = '#00e5ff'; ctx.font = '600 15px system-ui';
+    ctx.fillText('PRESS SPACE TO RETRY', 150, 360);
+  }
+}
+
+function loop() {
+  if (state === 'play') {
+    dropCounter++;
+    if (dropCounter >= dropInterval) {
+      dropCounter = 0;
+      drop();
+    }
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+window.addEventListener('message', e => {
+  if (e.data === 'restart') resetGame();
+});
+</script>
+</body>
+</html>

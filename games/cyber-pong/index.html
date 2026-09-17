@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Cyber Pong</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body { background: #050a14; color: #fff; font-family: system-ui, sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+  #wrap { position: relative; width: 100%; height: 100%; max-width: 680px; max-height: 480px; aspect-ratio: 680/480; background: #070d1a; border: 1px solid #162a45; box-shadow: 0 0 25px rgba(0,229,255,0.15); }
+  canvas { width: 100%; height: 100%; display: block; }
+  .hud { position: absolute; top: 12px; left: 16px; right: 16px; display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem; pointer-events: none; z-index: 10; }
+  .p1-sc { color: #00e5ff; }
+  .p2-sc { color: #ff0055; }
+  .mode-btn { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: #162a45; color: #fff; border: 1px solid #00e5ff; border-radius: 6px; padding: 6px 14px; font-weight: 700; font-size: 0.8rem; cursor: pointer; z-index: 20; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="hud">
+    <div class="p1-sc">PLAYER 1: <span id="s1">0</span></div>
+    <div class="p2-sc"><span id="p2-lbl">AI</span>: <span id="s2">0</span></div>
+  </div>
+  <canvas id="c" width="680" height="480"></canvas>
+  <button class="mode-btn" id="mbtn" onclick="toggleMode()">MODE: VS AI</button>
+</div>
+
+<script>
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const s1El = document.getElementById('s1'), s2El = document.getElementById('s2'), p2Lbl = document.getElementById('p2-lbl');
+const GAME_ID = 'cyber-pong';
+
+let actx = null;
+function snd(type) {
+  try {
+    if (localStorage.getItem('raptor_muted') === 'true') return;
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const t = actx.currentTime;
+    const osc = actx.createOscillator(), g = actx.createGain();
+    if (type === 'hit') {
+      osc.type = 'sine'; osc.frequency.setValueAtTime(440, t); osc.frequency.exponentialRampToValueAtTime(880, t + 0.05);
+      g.gain.setValueAtTime(0.08, t); g.gain.linearRampToValueAtTime(0, t + 0.05);
+      osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.05);
+    } else if (type === 'score') {
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(587, t); osc.frequency.setValueAtTime(880, t + 0.1);
+      g.gain.setValueAtTime(0.1, t); g.gain.linearRampToValueAtTime(0, t + 0.2);
+      osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.2);
+    }
+  } catch(e){}
+}
+
+let p1 = { y: 200, h: 80, w: 12, speed: 7 }, p2 = { y: 200, h: 80, w: 12, speed: 5.5 };
+let ball = { x: 340, y: 240, vx: 6, vy: 3, r: 8 };
+let s1 = 0, s2 = 0, state = 'start', mode = 'ai', particles = [];
+
+function toggleMode() {
+  mode = mode === 'ai' ? '2p' : 'ai';
+  document.getElementById('mbtn').textContent = 'MODE: ' + (mode === 'ai' ? 'VS AI' : '2 PLAYER');
+  p2Lbl.textContent = mode === 'ai' ? 'AI' : 'PLAYER 2';
+  resetMatch();
+}
+
+function resetMatch() {
+  s1 = 0; s2 = 0; s1El.textContent = '0'; s2El.textContent = '0';
+  resetBall();
+  state = 'play';
+}
+
+function resetBall(dir = 1) {
+  ball.x = 340; ball.y = 240;
+  ball.vx = dir * 6; ball.vy = (Math.random() - 0.5) * 6;
+}
+
+const keys = {};
+window.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (e.code === 'Space' && state !== 'play') resetMatch();
+  if (e.code === 'KeyR') resetMatch();
+});
+window.addEventListener('keyup', e => keys[e.code] = false);
+
+// Touch & Mouse
+cv.addEventListener('mousemove', e => {
+  const rect = cv.getBoundingClientRect();
+  p1.y = (e.clientY - rect.top) * (480 / rect.height) - p1.h / 2;
+});
+cv.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const rect = cv.getBoundingClientRect();
+  p1.y = (e.touches[0].clientY - rect.top) * (480 / rect.height) - p1.h / 2;
+});
+cv.addEventListener('click', () => { if (state !== 'play') resetMatch(); });
+
+function update() {
+  if (state !== 'play') return;
+
+  // Player 1 Keys
+  if (keys['KeyW'] && p1.y > 10) p1.y -= p1.speed;
+  if (keys['KeyS'] && p1.y < 480 - p1.h - 10) p1.y += p1.speed;
+
+  // Player 2 / AI
+  if (mode === '2p') {
+    if (keys['ArrowUp'] && p2.y > 10) p2.y -= p2.speed;
+    if (keys['ArrowDown'] && p2.y < 480 - p2.h - 10) p2.y += p2.speed;
+  } else {
+    // Smart AI
+    const targetY = ball.y - p2.h / 2;
+    p2.y += (targetY - p2.y) * 0.11;
+  }
+
+  // Clamping
+  p1.y = Math.max(10, Math.min(480 - p1.h - 10, p1.y));
+  p2.y = Math.max(10, Math.min(480 - p2.h - 10, p2.y));
+
+  // Ball movement
+  ball.x += ball.vx; ball.y += ball.vy;
+
+  // Top / Bottom bounce
+  if (ball.y <= ball.r) { ball.y = ball.r; ball.vy = Math.abs(ball.vy); snd('hit'); }
+  if (ball.y >= 480 - ball.r) { ball.y = 480 - ball.r; ball.vy = -Math.abs(ball.vy); snd('hit'); }
+
+  // Paddle 1 hit
+  if (ball.x - ball.r <= 32 + p1.w && ball.y >= p1.y && ball.y <= p1.y + p1.h && ball.vx < 0) {
+    ball.vx = Math.min(13, Math.abs(ball.vx) * 1.05);
+    const offset = (ball.y - (p1.y + p1.h / 2)) / (p1.h / 2);
+    ball.vy = offset * 7;
+    snd('hit');
+    addSparks(ball.x, ball.y, '#00e5ff');
+  }
+
+  // Paddle 2 hit
+  if (ball.x + ball.r >= 648 - p2.w && ball.y >= p2.y && ball.y <= p2.y + p2.h && ball.vx > 0) {
+    ball.vx = -Math.min(13, Math.abs(ball.vx) * 1.05);
+    const offset = (ball.y - (p2.y + p2.h / 2)) / (p2.h / 2);
+    ball.vy = offset * 7;
+    snd('hit');
+    addSparks(ball.x, ball.y, '#ff0055');
+  }
+
+  // Score P1
+  if (ball.x > 700) {
+    s1++; s1El.textContent = s1;
+    snd('score');
+    if (s1 >= 7) matchOver('PLAYER 1 WINS!');
+    else resetBall(-1);
+  }
+  // Score P2
+  if (ball.x < -20) {
+    s2++; s2El.textContent = s2;
+    snd('score');
+    if (s2 >= 7) matchOver(mode === 'ai' ? 'AI WINS!' : 'PLAYER 2 WINS!');
+    else resetBall(1);
+  }
+
+  // Particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.life -= 0.05;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function addSparks(x, y, color) {
+  for (let i = 0; i < 8; i++) {
+    particles.push({
+      x, y, vx: (Math.random()-0.5)*7, vy: (Math.random()-0.5)*7, color, life: 1
+    });
+  }
+}
+
+function matchOver(msg) {
+  state = 'over';
+  try {
+    const hs = parseInt(localStorage.getItem('raptor_hs_' + GAME_ID) || '0', 10);
+    if (s1 > hs) {
+      localStorage.setItem('raptor_hs_' + GAME_ID, s1);
+      if (window.parent && window.parent.onHighScoreUpdate) window.parent.onHighScoreUpdate(GAME_ID, s1);
+    }
+  } catch(e){}
+}
+
+function draw() {
+  ctx.fillStyle = '#070d1a';
+  ctx.fillRect(0, 0, 680, 480);
+
+  // Center dashed divider
+  ctx.strokeStyle = '#162a45'; ctx.lineWidth = 3; ctx.setLineDash([12, 12]);
+  ctx.beginPath(); ctx.moveTo(340, 0); ctx.lineTo(340, 480); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Paddles
+  ctx.fillStyle = '#00e5ff';
+  ctx.beginPath(); ctx.roundRect(32, p1.y, p1.w, p1.h, 6); ctx.fill();
+  ctx.fillStyle = '#ff0055';
+  ctx.beginPath(); ctx.roundRect(648 - p2.w, p2.y, p2.w, p2.h, 6); ctx.fill();
+
+  // Ball
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2); ctx.fill();
+
+  // Sparks
+  particles.forEach(p => {
+    ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
+    ctx.fillRect(p.x, p.y, 4, 4);
+  });
+  ctx.globalAlpha = 1;
+
+  // Overlays
+  if (state === 'start') {
+    ctx.fillStyle = 'rgba(7, 13, 26, 0.85)';
+    ctx.fillRect(0, 0, 680, 480);
+    ctx.fillStyle = '#00e5ff'; ctx.font = '900 36px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('CYBER PONG', 340, 210);
+    ctx.fillStyle = '#fff'; ctx.font = '600 16px system-ui';
+    ctx.fillText('PRESS SPACE OR CLICK TO SERVE', 340, 255);
+    ctx.fillStyle = '#90caf9'; ctx.font = '500 14px system-ui';
+    ctx.fillText('Move mouse or W/S to steer paddle', 340, 290);
+  } else if (state === 'over') {
+    ctx.fillStyle = 'rgba(7, 13, 26, 0.9)';
+    ctx.fillRect(0, 0, 680, 480);
+    ctx.fillStyle = '#ffd600'; ctx.font = '900 38px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText(s1 >= 7 ? 'VICTORY!' : 'DEFEAT!', 340, 210);
+    ctx.fillStyle = '#fff'; ctx.font = '700 20px system-ui';
+    ctx.fillText(s1 + ' - ' + s2, 340, 255);
+    ctx.fillStyle = '#00e5ff'; ctx.font = '600 16px system-ui';
+    ctx.fillText('CLICK TO PLAY ANOTHER MATCH', 340, 305);
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+window.addEventListener('message', e => {
+  if (e.data === 'restart') resetMatch();
+});
+</script>
+</body>
+</html>

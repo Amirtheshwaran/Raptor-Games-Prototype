@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Memory Cards</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body { background: #120b1f; color: #fff; font-family: system-ui, sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+  #wrap { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 14px; padding: 14px; }
+  .hud { display: flex; justify-content: space-between; font-weight: 800; font-size: 1rem; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; perspective: 1000px; }
+  .card { aspect-ratio: 1/1; background: #261642; border: 2px solid #5a2c8a; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer; transition: transform 0.25s ease, background 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+  .card:hover { border-color: #ab47bc; transform: translateY(-2px); }
+  .card.flipped { background: #4a1d72; border-color: #00e5ff; }
+  .card.matched { background: #1b5e20; border-color: #00e676; cursor: default; }
+  .btn { background: #ab47bc; color: #fff; font-weight: 800; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="hud">
+    <div style="color: #ab47bc;">MOVES: <span id="mv">0</span></div>
+    <button class="btn" onclick="init()">RESTART</button>
+    <div style="color: #ffd600;">BEST: <span id="hs">-</span></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const gridEl = document.getElementById('grid'), mvEl = document.getElementById('mv'), hsEl = document.getElementById('hs');
+const GAME_ID = 'memory-cards';
+let bestMoves = parseInt(localStorage.getItem('raptor_hs_' + GAME_ID) || '999', 10);
+if (bestMoves < 999) hsEl.textContent = bestMoves;
+
+const ICONS = ['⭐','⚡','💎','🗡️','👑','🛡️','🍄','🔥'];
+let cards = [], flipped = [], moves = 0, matched = 0, lock = false;
+
+function init() {
+  gridEl.innerHTML = '';
+  cards = [...ICONS, ...ICONS].sort(() => Math.random() - 0.5);
+  flipped = []; moves = 0; matched = 0; lock = false;
+  mvEl.textContent = '0';
+
+  cards.forEach((icon, i) => {
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.id = 'c-' + i;
+    c.textContent = '?';
+    c.onclick = () => flip(i, c, icon);
+    gridEl.appendChild(c);
+  });
+}
+
+function flip(i, el, icon) {
+  if (lock || el.classList.contains('flipped') || el.classList.contains('matched')) return;
+  el.classList.add('flipped');
+  el.textContent = icon;
+  flipped.push({ i, el, icon });
+
+  if (flipped.length === 2) {
+    moves++;
+    mvEl.textContent = moves;
+    lock = true;
+    if (flipped[0].icon === flipped[1].icon) {
+      flipped[0].el.classList.add('matched');
+      flipped[1].el.classList.add('matched');
+      matched += 2;
+      flipped = [];
+      lock = false;
+      if (matched === cards.length) {
+        // Victory!
+        if (moves < bestMoves) {
+          bestMoves = moves;
+          localStorage.setItem('raptor_hs_' + GAME_ID, bestMoves);
+          hsEl.textContent = bestMoves;
+          try { if (window.parent && window.parent.onHighScoreUpdate) window.parent.onHighScoreUpdate(GAME_ID, bestMoves); } catch(e){}
+        }
+      }
+    } else {
+      setTimeout(() => {
+        flipped[0].el.classList.remove('flipped'); flipped[0].el.textContent = '?';
+        flipped[1].el.classList.remove('flipped'); flipped[1].el.textContent = '?';
+        flipped = [];
+        lock = false;
+      }, 750);
+    }
+  }
+}
+
+init();
+
+window.addEventListener('message', e => {
+  if (e.data === 'restart') init();
+});
+</script>
+</body>
+</html>

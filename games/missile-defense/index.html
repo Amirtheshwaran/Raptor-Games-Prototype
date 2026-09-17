@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Missile Defense</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body { background: #08040d; color: #fff; font-family: system-ui, sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+  #wrap { position: relative; width: 100%; height: 100%; max-width: 640px; max-height: 480px; aspect-ratio: 4/3; background: #050209; border: 1px solid #3d1424; box-shadow: 0 0 25px rgba(255,61,0,0.2); }
+  canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+  .hud { position: absolute; top: 12px; left: 16px; right: 16px; display: flex; justify-content: space-between; font-weight: 800; font-size: 0.95rem; pointer-events: none; z-index: 10; }
+  .sc { color: #ff3d00; }
+  .hs { color: #ffd600; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="hud">
+    <div class="sc">SCORE: <span id="sc">0</span></div>
+    <div class="hs">BEST: <span id="hs">0</span></div>
+  </div>
+  <canvas id="c" width="640" height="480"></canvas>
+</div>
+
+<script>
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const scEl = document.getElementById('sc'), hsEl = document.getElementById('hs');
+const GAME_ID = 'missile-defense';
+let highScore = parseInt(localStorage.getItem('raptor_hs_' + GAME_ID) || '0', 10);
+hsEl.textContent = highScore;
+
+let actx = null;
+function snd(type) {
+  try {
+    if (localStorage.getItem('raptor_muted') === 'true') return;
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const t = actx.currentTime;
+    const osc = actx.createOscillator(), g = actx.createGain();
+    if (type === 'launch') {
+      osc.type = 'sine'; osc.frequency.setValueAtTime(300, t); osc.frequency.exponentialRampToValueAtTime(900, t + 0.15);
+      g.gain.setValueAtTime(0.08, t); g.gain.linearRampToValueAtTime(0, t + 0.15);
+      osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.15);
+    } else if (type === 'boom') {
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(140, t); osc.frequency.linearRampToValueAtTime(40, t + 0.3);
+      g.gain.setValueAtTime(0.15, t); g.gain.linearRampToValueAtTime(0, t + 0.3);
+      osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.3);
+    }
+  } catch(e){}
+}
+
+let missiles = [], interceptors = [], explosions = [], cities = [], score = 0, state = 'start';
+const silos = [{ x: 50, y: 440 }, { x: 320, y: 440 }, { x: 590, y: 440 }];
+
+function resetGame() {
+  cities = [
+    { x: 120, y: 440, alive: true }, { x: 180, y: 440, alive: true }, { x: 240, y: 440, alive: true },
+    { x: 400, y: 440, alive: true }, { x: 460, y: 440, alive: true }, { x: 520, y: 440, alive: true }
+  ];
+  missiles = []; interceptors = []; explosions = [];
+  score = 0; scEl.textContent = '0';
+  state = 'play';
+}
+
+function launchInterceptor(tx, ty) {
+  if (state !== 'play') { resetGame(); return; }
+  // Pick closest silo
+  let best = silos[0], minD = 9999;
+  silos.forEach(s => {
+    const d = Math.hypot(s.x - tx, s.y - ty);
+    if (d < minD) { minD = d; best = s; }
+  });
+  const angle = Math.atan2(ty - best.y, tx - best.x);
+  interceptors.push({
+    x: best.x, y: best.y, tx, ty,
+    vx: Math.cos(angle) * 12, vy: Math.sin(angle) * 12
+  });
+  snd('launch');
+}
+
+cv.addEventListener('click', e => {
+  const rect = cv.getBoundingClientRect();
+  const tx = (e.clientX - rect.left) * (640 / rect.width);
+  const ty = (e.clientY - rect.top) * (480 / rect.height);
+  launchInterceptor(tx, ty);
+});
+
+let spawnTimer = 0;
+function update() {
+  if (state !== 'play') return;
+
+  // Spawn incoming enemy warheads
+  spawnTimer++;
+  if (spawnTimer >= 40) {
+    spawnTimer = 0;
+    const targetCity = cities.find(c => c.alive) || silos[1];
+    const sx = Math.random() * 640;
+    const angle = Math.atan2(targetCity.y - 0, targetCity.x - sx);
+    const spd = Math.random() * 1.5 + 1.2;
+    missiles.push({
+      sx, sy: 0, x: sx, y: 0, tx: targetCity.x, ty: targetCity.y,
+      vx: Math.cos(angle) * spd, vy: Math.sin(angle) * spd
+    });
+  }
+
+  // Interceptors
+  for (let i = interceptors.length - 1; i >= 0; i--) {
+    const intc = interceptors[i];
+    intc.x += intc.vx; intc.y += intc.vy;
+    if (Math.hypot(intc.x - intc.tx, intc.y - intc.ty) < 14 || intc.y <= intc.ty) {
+      explosions.push({ x: intc.tx, y: intc.ty, r: 2, maxR: 36, expanding: true });
+      snd('boom');
+      interceptors.splice(i, 1);
+    }
+  }
+
+  // Explosions
+  for (let i = explosions.length - 1; i >= 0; i--) {
+    const exp = explosions[i];
+    if (exp.expanding) {
+      exp.r += 1.8;
+      if (exp.r >= exp.maxR) exp.expanding = false;
+    } else {
+      exp.r -= 0.8;
+      if (exp.r <= 0) { explosions.splice(i, 1); continue; }
+    }
+  }
+
+  // Enemy Missiles
+  for (let i = missiles.length - 1; i >= 0; i--) {
+    const m = missiles[i];
+    m.x += m.vx; m.y += m.vy;
+
+    // Check hit by explosion cloud
+    let destroyed = false;
+    for (let exp of explosions) {
+      if (Math.hypot(m.x - exp.x, m.y - exp.y) < exp.r) {
+        destroyed = true;
+        score += 25;
+        scEl.textContent = score;
+        explosions.push({ x: m.x, y: m.y, r: 2, maxR: 30, expanding: true });
+        snd('boom');
+        break;
+      }
+    }
+    if (destroyed) { missiles.splice(i, 1); continue; }
+
+    // Hit ground/city
+    if (m.y >= 440) {
+      explosions.push({ x: m.x, y: m.y, r: 2, maxR: 32, expanding: true });
+      snd('boom');
+      // Destroy nearby city
+      cities.forEach(c => {
+        if (c.alive && Math.abs(c.x - m.x) < 25) c.alive = false;
+      });
+      missiles.splice(i, 1);
+
+      if (cities.every(c => !c.alive)) {
+        gameOver();
+      }
+    }
+  }
+}
+
+function gameOver() {
+  state = 'over';
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('raptor_hs_' + GAME_ID, highScore);
+    hsEl.textContent = highScore;
+    try { if (window.parent && window.parent.onHighScoreUpdate) window.parent.onHighScoreUpdate(GAME_ID, highScore); } catch(e){}
+  }
+}
+
+function draw() {
+  ctx.fillStyle = '#050209';
+  ctx.fillRect(0, 0, 640, 480);
+
+  // Ground
+  ctx.fillStyle = '#1e0e08';
+  ctx.fillRect(0, 440, 640, 40);
+
+  // Silos
+  ctx.fillStyle = '#ffd600';
+  silos.forEach(s => {
+    ctx.beginPath(); ctx.moveTo(s.x - 18, 440); ctx.lineTo(s.x, 420); ctx.lineTo(s.x + 18, 440); ctx.fill();
+  });
+
+  // Cities
+  cities.forEach(c => {
+    if (c.alive) {
+      ctx.fillStyle = '#00e5ff';
+      ctx.fillRect(c.x - 10, 424, 20, 16);
+      ctx.fillRect(c.x - 5, 416, 10, 8);
+    }
+  });
+
+  // Enemy Missiles
+  ctx.strokeStyle = '#ff1744'; ctx.lineWidth = 1.5;
+  missiles.forEach(m => {
+    ctx.beginPath(); ctx.moveTo(m.sx, m.sy); ctx.lineTo(m.x, m.y); ctx.stroke();
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(m.x - 1.5, m.y - 1.5, 3, 3);
+  });
+
+  // Interceptors
+  ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 2;
+  interceptors.forEach(intc => {
+    ctx.beginPath(); ctx.moveTo(intc.x, intc.y); ctx.lineTo(intc.x - intc.vx, intc.y - intc.vy); ctx.stroke();
+  });
+
+  // Explosions
+  explosions.forEach(exp => {
+    ctx.fillStyle = 'rgba(0, 229, 255, 0.4)';
+    ctx.beginPath(); ctx.arc(exp.x, exp.y, exp.r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(exp.x, exp.y, exp.r * 0.4, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // Overlays
+  if (state === 'start') {
+    ctx.fillStyle = 'rgba(5, 2, 9, 0.85)';
+    ctx.fillRect(0, 0, 640, 480);
+    ctx.fillStyle = '#ff3d00'; ctx.font = '900 36px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('MISSILE DEFENSE', 320, 210);
+    ctx.fillStyle = '#fff'; ctx.font = '600 16px system-ui';
+    ctx.fillText('CLICK IN THE SKY TO DETONATE FLAK', 320, 255);
+  } else if (state === 'over') {
+    ctx.fillStyle = 'rgba(5, 2, 9, 0.9)';
+    ctx.fillRect(0, 0, 640, 480);
+    ctx.fillStyle = '#ff1744'; ctx.font = '900 38px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('ALL CITIES LOST', 320, 210);
+    ctx.fillStyle = '#fff'; ctx.font = '700 20px system-ui';
+    ctx.fillText('SCORE: ' + score, 320, 255);
+    ctx.fillStyle = '#00e5ff'; ctx.font = '600 16px system-ui';
+    ctx.fillText('CLICK TO PLAY AGAIN', 320, 305);
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+window.addEventListener('message', e => {
+  if (e.data === 'restart') resetGame();
+});
+</script>
+</body>
+</html>

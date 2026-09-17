@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Sudoku Master</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body { background: #0c1424; color: #fff; font-family: system-ui, sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+  #wrap { width: 100%; max-width: 480px; padding: 14px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  .hud { width: 100%; display: flex; justify-content: space-between; font-weight: 800; font-size: 0.95rem; }
+  #grid { width: 100%; max-width: 380px; aspect-ratio: 1/1; background: #111d33; border: 3px solid #00b0ff; border-radius: 6px; display: grid; grid-template-columns: repeat(9, 1fr); }
+  .cell { border: 1px solid #1c2e50; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; cursor: pointer; color: #90caf9; }
+  .cell.initial { color: #ffffff; font-weight: 900; }
+  .cell.selected { background: #1e3a68; }
+  .cell.highlight { background: #15294a; }
+  .cell.error { color: #ff1744; background: rgba(255,23,68,0.2); }
+  .cell:nth-child(3n) { border-right: 2px solid #00b0ff; }
+  .cell:nth-child(9n) { border-right: none; }
+  .border-b { border-bottom: 2px solid #00b0ff !important; }
+  .numpad { display: flex; gap: 6px; width: 100%; max-width: 380px; justify-content: center; }
+  .nbtn { flex: 1; height: 42px; background: #15294a; color: #00b0ff; border: 1px solid #1c3d70; border-radius: 6px; font-size: 1.2rem; font-weight: 800; cursor: pointer; }
+  .nbtn:hover { background: #00b0ff; color: #000; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="hud">
+    <div style="color: #00b0ff;">MISTAKES: <span id="err">0</span>/3</div>
+    <div style="color: #ffd600;">TIME: <span id="timer">00:00</span></div>
+    <button onclick="newGame()" style="background:#00b0ff; color:#000; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">NEW</button>
+  </div>
+  <div id="grid"></div>
+  <div class="numpad">
+    <button class="nbtn" onclick="enterNum(1)">1</button>
+    <button class="nbtn" onclick="enterNum(2)">2</button>
+    <button class="nbtn" onclick="enterNum(3)">3</button>
+    <button class="nbtn" onclick="enterNum(4)">4</button>
+    <button class="nbtn" onclick="enterNum(5)">5</button>
+    <button class="nbtn" onclick="enterNum(6)">6</button>
+    <button class="nbtn" onclick="enterNum(7)">7</button>
+    <button class="nbtn" onclick="enterNum(8)">8</button>
+    <button class="nbtn" onclick="enterNum(9)">9</button>
+    <button class="nbtn" onclick="enterNum(0)" style="color:#ff1744;">✕</button>
+  </div>
+</div>
+
+<script>
+const gridEl = document.getElementById('grid'), errEl = document.getElementById('err'), timeEl = document.getElementById('timer');
+const GAME_ID = 'sudoku';
+
+// Pre-generated balanced Sudoku puzzles
+const PUZZLES = [
+  {
+    initial: "530070000600195000098000060800060003400803001700020006060000280000419005000080079",
+    sol:     "534678912672195348198342567859761423426853791713924856961537284287419635345286179"
+  },
+  {
+    initial: "000260701680070090190004500820100040004602900050003028009300074040050036703018000",
+    sol:     "435269781682571493197834562826195347374682915951743628519326874248957136763418259"
+  }
+];
+
+let puzzle = null, selected = null, mistakes = 0, elapsed = 0, timerInt = null;
+
+function newGame() {
+  clearInterval(timerInt);
+  mistakes = 0; elapsed = 0; errEl.textContent = '0';
+  puzzle = PUZZLES[Math.floor(Math.random() * PUZZLES.length)];
+  selected = null;
+  timerInt = setInterval(() => {
+    elapsed++;
+    const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    timeEl.textContent = `${m}:${s}`;
+  }, 1000);
+  buildGrid();
+}
+
+function buildGrid() {
+  gridEl.innerHTML = '';
+  for (let i = 0; i < 81; i++) {
+    const r = Math.floor(i / 9), c = i % 9;
+    const ch = puzzle.initial[i];
+    const cell = document.createElement('div');
+    cell.className = 'cell' + (r === 2 || r === 5 ? ' border-b' : '');
+    cell.dataset.idx = i;
+    if (ch !== '0') {
+      cell.textContent = ch;
+      cell.classList.add('initial');
+    }
+    cell.onclick = () => selectCell(i);
+    gridEl.appendChild(cell);
+  }
+}
+
+function selectCell(idx) {
+  selected = idx;
+  const cells = gridEl.children;
+  for (let i = 0; i < 81; i++) {
+    cells[i].classList.remove('selected', 'highlight');
+    if (i === idx) cells[i].classList.add('selected');
+    else if (cells[i].textContent && cells[i].textContent === cells[idx].textContent) {
+      cells[i].classList.add('highlight');
+    }
+  }
+}
+
+function enterNum(num) {
+  if (selected === null) return;
+  const cell = gridEl.children[selected];
+  if (cell.classList.contains('initial')) return;
+
+  if (num === 0) {
+    cell.textContent = '';
+    cell.classList.remove('error');
+    return;
+  }
+
+  cell.textContent = num;
+  const correct = puzzle.sol[selected];
+  if (String(num) !== correct) {
+    cell.classList.add('error');
+    mistakes++;
+    errEl.textContent = mistakes;
+    if (mistakes >= 3) {
+      alert('Three mistakes! Try again.');
+      newGame();
+    }
+  } else {
+    cell.classList.remove('error');
+    checkWin();
+  }
+}
+
+function checkWin() {
+  const cells = gridEl.children;
+  for (let i = 0; i < 81; i++) {
+    if (cells[i].textContent !== puzzle.sol[i]) return;
+  }
+  clearInterval(timerInt);
+  alert('Congratulations! Puzzle solved in ' + timeEl.textContent);
+  try {
+    const score = Math.max(10, 1000 - elapsed);
+    const hs = parseInt(localStorage.getItem('raptor_hs_' + GAME_ID) || '0', 10);
+    if (score > hs) {
+      localStorage.setItem('raptor_hs_' + GAME_ID, score);
+      if (window.parent && window.parent.onHighScoreUpdate) window.parent.onHighScoreUpdate(GAME_ID, score);
+    }
+  } catch(e){}
+}
+
+window.addEventListener('keydown', e => {
+  if (e.key >= '1' && e.key <= '9') enterNum(parseInt(e.key));
+  if (e.key === 'Backspace' || e.key === 'Delete') enterNum(0);
+});
+
+newGame();
+
+window.addEventListener('message', e => {
+  if (e.data === 'restart') newGame();
+});
+</script>
+</body>
+</html>

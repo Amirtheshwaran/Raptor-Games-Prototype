@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Neon Snake</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+  body { background: #060912; color: #fff; font-family: system-ui, sans-serif; overflow: hidden; display: flex; align-items: center; justify-content: center; height: 100vh; }
+  #game-wrap { position: relative; width: 100%; height: 100%; max-width: 600px; max-height: 600px; aspect-ratio: 1/1; background: #080d1a; border: 1px solid #1a2744; box-shadow: 0 0 30px rgba(0,255,204,0.15); }
+  canvas { width: 100%; height: 100%; display: block; }
+  .hud { position: absolute; top: 12px; left: 16px; right: 16px; display: flex; justify-content: space-between; font-weight: 800; font-size: 1rem; letter-spacing: 1px; pointer-events: none; z-index: 10; }
+  .score { color: #00ffcc; text-shadow: 0 0 8px #00ffcc; }
+  .best { color: #ffd600; }
+  .dpad { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: none; grid-template-columns: repeat(3, 44px); gap: 6px; z-index: 20; }
+  .dbtn { width: 44px; height: 44px; border-radius: 8px; background: rgba(16,28,52,0.85); border: 1px solid #00ffcc; color: #00ffcc; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  @media(max-width: 600px){ .dpad { display: grid; } }
+</style>
+</head>
+<body>
+<div id="game-wrap">
+  <div class="hud">
+    <div class="score">SCORE: <span id="sc">0</span></div>
+    <div class="best">BEST: <span id="hs">0</span></div>
+  </div>
+  <canvas id="c" width="600" height="600"></canvas>
+  <div class="dpad">
+    <div></div><button class="dbtn" onclick="setDir(0,-1)">↑</button><div></div>
+    <button class="dbtn" onclick="setDir(-1,0)">←</button><button class="dbtn" onclick="setDir(0,1)">↓</button><button class="dbtn" onclick="setDir(1,0)">→</button>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+const scEl = document.getElementById('sc'), hsEl = document.getElementById('hs');
+const GAME_ID = 'neon-snake';
+let highScore = parseInt(localStorage.getItem('raptor_hs_' + GAME_ID) || '0', 10);
+hsEl.textContent = highScore;
+
+// Audio
+let actx = null;
+function snd(type) {
+  try {
+    if (localStorage.getItem('raptor_muted') === 'true') return;
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+    const t = actx.currentTime;
+    const osc = actx.createOscillator(), g = actx.createGain();
+    if (type === 'eat') {
+      osc.type = 'sine'; osc.frequency.setValueAtTime(500, t); osc.frequency.setValueAtTime(800, t + 0.05);
+      g.gain.setValueAtTime(0.1, t); g.gain.linearRampToValueAtTime(0, t + 0.1);
+      osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.1);
+    } else if (type === 'die') {
+      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(220, t); osc.frequency.linearRampToValueAtTime(50, t + 0.3);
+      g.gain.setValueAtTime(0.15, t); g.gain.linearRampToValueAtTime(0, t + 0.3);
+      osc.connect(g); g.connect(actx.destination); osc.start(t); osc.stop(t + 0.3);
+    }
+  } catch(e){}
+}
+
+const GRID = 25, CELL = 600 / GRID;
+let snake = [], dir = {x: 1, y: 0}, nextDir = {x: 1, y: 0};
+let food = {x: 18, y: 12, type: 'normal'};
+let score = 0, state = 'start', stepTimer = 0, stepInterval = 6;
+let particles = [];
+
+function reset() {
+  snake = [{x: 8, y: 12}, {x: 7, y: 12}, {x: 6, y: 12}, {x: 5, y: 12}];
+  dir = {x: 1, y: 0}; nextDir = {x: 1, y: 0};
+  score = 0; scEl.textContent = '0';
+  spawnFood();
+  particles = [];
+  stepInterval = 6;
+}
+
+function spawnFood() {
+  let ok = false;
+  while (!ok) {
+    food.x = Math.floor(Math.random() * GRID);
+    food.y = Math.floor(Math.random() * GRID);
+    ok = !snake.some(s => s.x === food.x && s.y === food.y);
+  }
+  food.type = Math.random() > 0.8 ? 'gold' : 'normal';
+}
+
+function setDir(x, y) {
+  if (state !== 'play') { reset(); state = 'play'; return; }
+  if (x !== -dir.x || y !== -dir.y) nextDir = {x, y};
+}
+
+window.addEventListener('keydown', e => {
+  if (['ArrowUp', 'KeyW'].includes(e.code)) { e.preventDefault(); setDir(0, -1); }
+  if (['ArrowDown', 'KeyS'].includes(e.code)) { e.preventDefault(); setDir(0, 1); }
+  if (['ArrowLeft', 'KeyA'].includes(e.code)) { e.preventDefault(); setDir(-1, 0); }
+  if (['ArrowRight', 'KeyD'].includes(e.code)) { e.preventDefault(); setDir(1, 0); }
+  if (e.code === 'Space' && state !== 'play') { reset(); state = 'play'; }
+  if (e.code === 'KeyR') { reset(); state = 'play'; }
+});
+cv.addEventListener('click', () => { if (state !== 'play') { reset(); state = 'play'; } });
+
+function update() {
+  if (state !== 'play') return;
+  stepTimer++;
+  if (stepTimer >= stepInterval) {
+    stepTimer = 0;
+    dir = nextDir;
+    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+
+    // Wall collision
+    if (head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID) {
+      gameOver(); return;
+    }
+    // Self collision
+    if (snake.some(s => s.x === head.x && s.y === head.y)) {
+      gameOver(); return;
+    }
+
+    snake.unshift(head);
+
+    // Food
+    if (head.x === food.x && head.y === food.y) {
+      snd('eat');
+      const pts = food.type === 'gold' ? 30 : 10;
+      score += pts;
+      scEl.textContent = score;
+      for (let i = 0; i < 12; i++) {
+        particles.push({
+          x: food.x * CELL + CELL/2, y: food.y * CELL + CELL/2,
+          vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6,
+          color: food.type === 'gold' ? '#ffd700' : '#ff007f', life: 1
+        });
+      }
+      spawnFood();
+      if (score % 60 === 0 && stepInterval > 3) stepInterval--;
+    } else {
+      snake.pop();
+    }
+  }
+
+  // Update particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function gameOver() {
+  state = 'over';
+  snd('die');
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('raptor_hs_' + GAME_ID, highScore);
+    hsEl.textContent = highScore;
+    try { if (window.parent && window.parent.onHighScoreUpdate) window.parent.onHighScoreUpdate(GAME_ID, highScore); } catch(e){}
+  }
+}
+
+function draw() {
+  ctx.fillStyle = '#070c18';
+  ctx.fillRect(0, 0, 600, 600);
+
+  // Subtle grid
+  ctx.strokeStyle = '#0d182d';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= GRID; i++) {
+    ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, 600); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i * CELL); ctx.lineTo(600, i * CELL); ctx.stroke();
+  }
+
+  // Food
+  ctx.save();
+  ctx.shadowColor = food.type === 'gold' ? '#ffd700' : '#ff007f';
+  ctx.shadowBlur = 15;
+  ctx.fillStyle = food.type === 'gold' ? '#ffd700' : '#ff007f';
+  ctx.beginPath();
+  ctx.arc(food.x * CELL + CELL/2, food.y * CELL + CELL/2, CELL/2.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Snake
+  ctx.save();
+  ctx.shadowColor = '#00ffcc';
+  ctx.shadowBlur = 12;
+  snake.forEach((s, idx) => {
+    ctx.fillStyle = idx === 0 ? '#ffffff' : '#00ffcc';
+    const r = idx === 0 ? 5 : 4;
+    ctx.beginPath();
+    ctx.roundRect(s.x * CELL + 2, s.y * CELL + 2, CELL - 4, CELL - 4, r);
+    ctx.fill();
+  });
+  ctx.restore();
+
+  // Particles
+  particles.forEach(p => {
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.life;
+    ctx.fillRect(p.x, p.y, 4, 4);
+  });
+  ctx.globalAlpha = 1;
+
+  // Overlays
+  if (state === 'start') {
+    ctx.fillStyle = 'rgba(5, 10, 20, 0.85)';
+    ctx.fillRect(0, 0, 600, 600);
+    ctx.fillStyle = '#00ffcc'; ctx.font = '900 42px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('NEON SNAKE', 300, 260);
+    ctx.fillStyle = '#fff'; ctx.font = '600 18px system-ui';
+    ctx.fillText('PRESS ARROW KEYS OR TAP TO START', 300, 310);
+  } else if (state === 'over') {
+    ctx.fillStyle = 'rgba(5, 10, 20, 0.88)';
+    ctx.fillRect(0, 0, 600, 600);
+    ctx.fillStyle = '#ff1744'; ctx.font = '900 42px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('GRID COLLISION', 300, 240);
+    ctx.fillStyle = '#fff'; ctx.font = '700 24px system-ui';
+    ctx.fillText('SCORE: ' + score, 300, 290);
+    ctx.fillStyle = '#ffd600'; ctx.font = '600 18px system-ui';
+    ctx.fillText('BEST: ' + highScore, 300, 325);
+    ctx.fillStyle = '#00ffcc'; ctx.font = '600 18px system-ui';
+    ctx.fillText('PRESS SPACE OR CLICK TO PLAY AGAIN', 300, 380);
+  }
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+window.addEventListener('message', e => {
+  if (e.data === 'restart') { reset(); state = 'play'; }
+});
+</script>
+</body>
+</html>
