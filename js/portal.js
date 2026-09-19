@@ -1,6 +1,6 @@
 /**
  * Raptor Games — Portal Controller
- * Friv-style game theater, instant loading, discovery, sound & persistence.
+ * Friv-style game theater, instant loading, rich game catalog, sound & persistence.
  */
 
 let activeCategory = 'all';
@@ -8,7 +8,7 @@ let searchQuery = '';
 let activeFilter = null; // null, 'favorites', 'recent'
 let currentGameId = null;
 
-// Favorites & Recents Management
+// Favorites & Recents in localStorage
 function getFavorites() {
   try {
     return JSON.parse(localStorage.getItem('raptor_favorites') || '[]');
@@ -47,7 +47,7 @@ function getRecentGames() {
 function recordRecentGame(id) {
   let recents = getRecentGames().filter(x => x !== id);
   recents.unshift(id);
-  if (recents.length > 12) recents.pop();
+  if (recents.length > 16) recents.pop();
   localStorage.setItem('raptor_recent', JSON.stringify(recents));
 }
 
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGrid();
   updateFavoritesCounter();
 
-  // Handle URL deep link (e.g. ?game=raptor-run)
+  // Handle URL deep link (e.g. ?game=motox3m)
   const params = new URLSearchParams(window.location.search);
   const targetGame = params.get('game');
   if (targetGame && GAMES.find(g => g.id === targetGame)) {
@@ -174,26 +174,30 @@ function initControls() {
 
 // FEATURED HERO STRIP
 function renderFeatured() {
-  const featured = GAMES.find(g => g.id === 'raptor-run') || GAMES[0];
-  const side1 = GAMES.find(g => g.id === 'tetra-blocks') || GAMES[1];
-  const side2 = GAMES.find(g => g.id === 'g2048') || GAMES[2];
+  const featured = GAMES.find(g => g.id === 'motox3m') || GAMES[0];
+  const side1 = GAMES.find(g => g.id === 'slope') || GAMES[1];
+  const side2 = GAMES.find(g => g.id === 'fireboywatergirlforesttemple') || GAMES[2];
 
   const featCard = document.getElementById('heroCard');
-  if (featCard) {
+  if (featCard && featured) {
     featCard.onclick = () => openGame(featured.id);
     document.getElementById('featTitle').textContent = featured.title;
     document.getElementById('featDesc').textContent = featured.desc;
-    document.getElementById('featCat').textContent = CATEGORIES[featured.cat]?.name || 'Action';
-    document.getElementById('featArt').innerHTML = featured.svg;
+    document.getElementById('featCat').textContent = CATEGORIES[featured.cat]?.name || 'Featured';
+    document.getElementById('featArt').innerHTML = `
+      <img src="${featured.thumbnail}" alt="${featured.title}" class="hero-art-img" onerror="this.style.display='none'">
+    `;
   }
 
   const s1 = document.getElementById('sideHighlight1');
   if (s1 && side1) {
     s1.onclick = () => openGame(side1.id);
     s1.querySelector('.highlight-title').textContent = side1.title;
-    s1.querySelector('.highlight-cat').textContent = CATEGORIES[side1.cat]?.name || 'Puzzle';
-    s1.querySelector('.highlight-sub').textContent = side1.tags.join(' • ');
-    s1.querySelector('.highlight-thumb').innerHTML = side1.svg;
+    s1.querySelector('.highlight-cat').textContent = CATEGORIES[side1.cat]?.name || 'Skill';
+    s1.querySelector('.highlight-sub').textContent = side1.tags.slice(0, 3).join(' • ');
+    s1.querySelector('.highlight-thumb').innerHTML = `
+      <img src="${side1.thumbnail}" alt="${side1.title}" class="highlight-img" onerror="this.style.display='none'">
+    `;
   }
 
   const s2 = document.getElementById('sideHighlight2');
@@ -201,8 +205,10 @@ function renderFeatured() {
     s2.onclick = () => openGame(side2.id);
     s2.querySelector('.highlight-title').textContent = side2.title;
     s2.querySelector('.highlight-cat').textContent = CATEGORIES[side2.cat]?.name || 'Puzzle';
-    s2.querySelector('.highlight-sub').textContent = side2.tags.join(' • ');
-    s2.querySelector('.highlight-thumb').innerHTML = side2.svg;
+    s2.querySelector('.highlight-sub').textContent = side2.tags.slice(0, 3).join(' • ');
+    s2.querySelector('.highlight-thumb').innerHTML = `
+      <img src="${side2.thumbnail}" alt="${side2.title}" class="highlight-img" onerror="this.style.display='none'">
+    `;
   }
 }
 
@@ -271,7 +277,7 @@ function renderGrid() {
     return `
       <div class="game-card" style="--card-accent: ${game.color}" onclick="openGame('${game.id}')">
         <div class="card-thumbnail">
-          ${game.svg}
+          <img src="${game.thumbnail}" alt="${game.title}" class="card-thumb-img" loading="lazy" onerror="this.src='assets/icons/slope.webp'">
           <div class="card-play-overlay">
             <span class="card-play-badge">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>
@@ -342,7 +348,9 @@ function openGame(id) {
   if (titleEl) titleEl.textContent = game.title;
   if (catEl) catEl.textContent = CATEGORIES[game.cat]?.name || 'Arcade';
   if (hsEl) hsEl.textContent = getHighScore(game.id);
-  if (thumbEl) thumbEl.innerHTML = game.svg;
+  if (thumbEl) {
+    thumbEl.innerHTML = `<img src="${game.thumbnail}" alt="${game.title}" class="player-thumb-img" onerror="this.src='assets/icons/slope.webp'">`;
+  }
   if (descEl) descEl.textContent = game.instructions;
 
   // Controls Key Badges
@@ -355,12 +363,14 @@ function openGame(id) {
     `).join('');
   }
 
-  // Related Up Next Tray (3 games in same category or popular)
+  // Related Up Next Tray (3 similar games in same category or popular)
   if (trayEl) {
-    const related = GAMES.filter(g => g.id !== id).slice(0, 3);
+    const related = GAMES.filter(g => g.id !== id && (g.cat === game.cat || g.hot)).slice(0, 4);
     trayEl.innerHTML = related.map(rel => `
       <div class="tray-card" onclick="openGame('${rel.id}')">
-        <div class="tray-thumb">${rel.svg}</div>
+        <div class="tray-thumb">
+          <img src="${rel.thumbnail}" alt="${rel.title}" class="tray-thumb-img" onerror="this.src='assets/icons/slope.webp'">
+        </div>
         <div class="tray-title">${rel.title}</div>
       </div>
     `).join('');
@@ -371,6 +381,9 @@ function openGame(id) {
   // Load Iframe
   if (iframe) {
     iframe.src = `games/${game.id}/index.html`;
+    setTimeout(() => {
+      try { iframe.contentWindow.focus(); } catch (e) {}
+    }, 200);
   }
 
   modal.classList.add('active');
@@ -410,8 +423,13 @@ function togglePlayerFav() {
 
 function restartActiveGame() {
   const iframe = document.getElementById('gameIframe');
-  if (iframe && iframe.contentWindow) {
-    iframe.contentWindow.postMessage('restart', '*');
+  if (iframe) {
+    const current = iframe.src;
+    iframe.src = 'about:blank';
+    setTimeout(() => {
+      iframe.src = current;
+      try { iframe.contentWindow.focus(); } catch (e) {}
+    }, 50);
   }
 }
 
@@ -428,7 +446,11 @@ function togglePlayerFullscreen() {
 
 // Global Keyboard Shortcuts
 window.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
+  if (e.key === 'Escape' && currentGameId) {
     closePlayer();
+  } else if ((e.key === 'f' || e.key === 'F') && currentGameId && document.activeElement !== document.getElementById('searchInput')) {
+    togglePlayerFullscreen();
+  } else if ((e.key === 'r' || e.key === 'R') && currentGameId && document.activeElement !== document.getElementById('searchInput')) {
+    restartActiveGame();
   }
 });

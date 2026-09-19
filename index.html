@@ -31,7 +31,7 @@
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search 20 arcade games..." autocomplete="off" spellcheck="false">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search 42 arcade & browser games..." autocomplete="off" spellcheck="false">
         <span class="search-kbd">/</span>
       </div>
 
@@ -80,36 +80,42 @@
         <div class="featured-info">
           <div class="featured-tag">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Featured Flagship
+            Featured Game
           </div>
-          <h2 class="featured-title" id="featTitle">Raptor Run</h2>
-          <p class="featured-desc" id="featDesc">High-octane jurassic endless runner. Sprint across volcanic plateaus, jump rock spires, duck swooping pterodactyls, and devour meat for speed multipliers.</p>
+          <h2 class="featured-title" id="featTitle">Moto X3M</h2>
+          <p class="featured-desc" id="featDesc">The ultimate motorbike stunt racing game. Speed through lethal loops, explosive TNT barrels, and nail insane flips to beat the clock.</p>
           <div class="featured-meta">
             <button class="play-now-btn">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>
               PLAY NOW — FREE
             </button>
-            <span style="font-size: 0.8rem; color: var(--text-muted);" id="featCat">Action</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);" id="featCat">Driving</span>
           </div>
         </div>
-        <div class="featured-art" id="featArt"></div>
+        <div class="featured-art" id="featArt">
+          <img src="games/motox3m/splash.jpg" alt="Moto X3M" class="hero-art-img">
+        </div>
       </div>
 
       <div class="side-highlights">
         <div class="highlight-box" id="sideHighlight1">
-          <div class="highlight-thumb"></div>
+          <div class="highlight-thumb">
+            <img src="games/slope/slope4.jpeg" alt="Slope" class="highlight-img">
+          </div>
           <div class="highlight-details">
-            <div class="highlight-cat">PUZZLE</div>
-            <div class="highlight-title">Tetra Blocks</div>
-            <div class="highlight-sub">SRS Rotations • Ghost Drops</div>
+            <div class="highlight-cat">SKILL</div>
+            <div class="highlight-title">Slope</div>
+            <div class="highlight-sub">3D Speed • Endless Downhill</div>
           </div>
         </div>
         <div class="highlight-box" id="sideHighlight2">
-          <div class="highlight-thumb"></div>
+          <div class="highlight-thumb">
+            <img src="games/fireboywatergirlforesttemple/logo.jpeg" alt="Fireboy & Watergirl" class="highlight-img">
+          </div>
           <div class="highlight-details">
-            <div class="highlight-cat">LOGIC</div>
-            <div class="highlight-title">2048 Master</div>
-            <div class="highlight-sub">Undo Moves • High Score</div>
+            <div class="highlight-cat">PUZZLE</div>
+            <div class="highlight-title">Fireboy & Watergirl</div>
+            <div class="highlight-sub">Co-op • Forest Temple</div>
           </div>
         </div>
       </div>
@@ -121,7 +127,7 @@
         <div class="section-indicator"></div>
         <span id="sectionTitle">All Playable Games</span>
       </div>
-      <div class="section-count" id="sectionCount">20 Games Available</div>
+      <div class="section-count" id="sectionCount">42 Games Available</div>
     </div>
 
     <!-- GAMES GRID -->
@@ -190,7 +196,7 @@
 
       <!-- GAME CANVAS STAGE -->
       <div class="game-stage-wrapper" id="gameStageWrapper">
-        <iframe id="gameIframe" class="game-iframe" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-pointer-lock"></iframe>
+        <iframe id="gameIframe" class="game-iframe" allow="autoplay; fullscreen; gamepad; focus-without-user-activation *" loading="eager"></iframe>
       </div>
 
       <!-- BOTTOM DETAILS & UP NEXT -->

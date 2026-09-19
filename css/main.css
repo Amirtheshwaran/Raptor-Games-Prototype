@@ -398,10 +398,12 @@ button {
   background: #060910;
 }
 
+.featured-art img,
 .featured-art svg {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 /* Quick Jump Dual Side Panel */
@@ -438,6 +440,14 @@ button {
   flex-shrink: 0;
   background: #060910;
   border: 1px solid var(--border-subtle);
+}
+
+.highlight-thumb img,
+.highlight-thumb svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .highlight-details {

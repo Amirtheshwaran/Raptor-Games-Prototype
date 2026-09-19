@@ -61,10 +61,12 @@
   border: 1px solid var(--border-subtle);
 }
 
+.player-game-thumb img,
 .player-game-thumb svg {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .player-title-box {
@@ -270,10 +272,12 @@
   background: #000;
 }
 
+.tray-thumb img,
 .tray-thumb svg {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .tray-title {

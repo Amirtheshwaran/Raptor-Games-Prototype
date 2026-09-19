@@ -1,642 +1,622 @@
-/** Raptor Games Catalog */
+/**
+ * Raptor Games — Official Game Catalog
+ * 42 Authentic Browser & Arcade Classics
+ */
 
 const CATEGORIES = {
-  "all": {
-    "name": "All Games",
-    "icon": "grid"
-  },
-  "arcade": {
-    "name": "Arcade",
-    "icon": "joystick"
-  },
-  "action": {
-    "name": "Action",
-    "icon": "flame"
-  },
-  "puzzle": {
-    "name": "Puzzle",
-    "icon": "brain"
-  },
-  "retro": {
-    "name": "Retro Classics",
-    "icon": "pixel"
-  },
-  "strategy": {
-    "name": "Strategy",
-    "icon": "chess"
-  },
-  "sports": {
-    "name": "Sports & Skill",
-    "icon": "trophy"
-  },
-  "cards": {
-    "name": "Cards & Boards",
-    "icon": "cards"
-  }
+  all: { name: 'All Games', icon: 'grid' },
+  driving: { name: 'Driving & Stunts', icon: 'steering' },
+  action: { name: 'Action', icon: 'flame' },
+  sports: { name: 'Sports & 2P', icon: 'trophy' },
+  puzzle: { name: 'Puzzle & Logic', icon: 'brain' },
+  arcade: { name: 'Arcade Classics', icon: 'joystick' },
+  skill: { name: 'Skill & Speed', icon: 'zap' }
 };
 
 const GAMES = [
   {
-    "id": "raptor-run",
-    "title": "Raptor Run",
-    "cat": "action",
-    "color": "#ff5722",
-    "tags": [
-      "Endless Runner",
-      "Jurassic",
-      "Fast Reflex"
+    id: 'motox3m',
+    title: 'Moto X3M',
+    cat: 'driving',
+    color: '#ff5722',
+    tags: ['Motorbike', 'Stunts', 'Racing', 'Physics'],
+    thumbnail: 'games/motox3m/splash.jpg',
+    desc: 'The ultimate motorbike stunt racing game. Speed through lethal loops, explosive TNT barrels, and nail insane flips to beat the clock.',
+    instructions: 'Accelerate forward, tilt your bike mid-air to land smoothly on both wheels, and flip to shave precious seconds off your time.',
+    controls: [
+      { key: '↑ / W', action: 'Accelerate' },
+      { key: '↓ / S', action: 'Brake / Reverse' },
+      { key: '← → / A D', action: 'Tilt & Backflip / Frontflip' }
     ],
-    "desc": "High-octane prehistoric endless runner. Leap across magma chasms, dodge swooping pterosaurs, and binge meat legs for 2X frenzy score multiplier.",
-    "instructions": "Jump over rock spires and lava pits. Duck beneath swooping pterodactyls. Grab meat pickups to trigger 2X speed frenzy combos.",
-    "controls": [
-      {
-        "key": "Space / \u2191",
-        "action": "Jump (Hold for higher)"
-      },
-      {
-        "key": "\u2193 / S",
-        "action": "Duck / Slide"
-      },
-      {
-        "key": "Tap Screen",
-        "action": "Mobile Jump / Slide"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "touch"
-    ],
-    "hot": true,
-    "featured": true,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <defs>\n      <linearGradient id=\"rr-bg\" x1=\"0%\" y1=\"0%\" x2=\"0%\" y2=\"100%\">\n        <stop offset=\"0%\" stop-color=\"#200b0f\"/><stop offset=\"60%\" stop-color=\"#6a1b18\"/><stop offset=\"100%\" stop-color=\"#ff5722\"/>\n      </linearGradient>\n    </defs>\n    <rect width=\"400\" height=\"240\" fill=\"url(#rr-bg)\"/>\n    <circle cx=\"320\" cy=\"55\" r=\"32\" fill=\"#ffe0b2\" opacity=\"0.8\"/>\n    <polygon points=\"40,200 150,80 260,200\" fill=\"#180608\"/>\n    <polygon points=\"160,200 260,110 360,200\" fill=\"#2a0d12\"/>\n    <rect y=\"195\" width=\"400\" height=\"45\" fill=\"#110507\"/>\n    <line x1=\"0\" y1=\"195\" x2=\"400\" y2=\"195\" stroke=\"#ff5722\" stroke-width=\"2\"/>\n    <polygon points=\"260,195 270,165 280,195\" fill=\"#ff3d00\"/>\n    <polygon points=\"275,195 283,155 291,195\" fill=\"#ff5722\"/>\n    <g transform=\"translate(75, 140) scale(0.95)\">\n      <path d=\"M20,32 Q35,28 50,30 Q60,35 70,30 Q75,18 68,10 Q60,5 50,8 Q45,2 38,4 Q30,10 32,22 Q15,22 0,15 Q10,25 20,32 Z\" fill=\"#110507\"/>\n      <path d=\"M68,10 Q78,12 82,18 Q76,22 68,18 Z\" fill=\"#ff5722\"/>\n      <circle cx=\"66\" cy=\"12\" r=\"2.5\" fill=\"#ffff55\"/>\n      <path d=\"M38,32 L46,46 L56,50\" stroke=\"#110507\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\n      <path d=\"M28,32 L20,44 L10,48\" stroke=\"#110507\" stroke-width=\"4\" stroke-linecap=\"round\" fill=\"none\"/>\n    </g>\n  </svg>"
+    hot: true,
+    featured: true
   },
   {
-    "id": "neon-snake",
-    "title": "Neon Snake",
-    "cat": "retro",
-    "color": "#00ffcc",
-    "tags": [
-      "Classic",
-      "Arcade",
-      "Reflex"
+    id: 'slope',
+    title: 'Slope',
+    cat: 'skill',
+    color: '#00e676',
+    tags: ['3D Speed', 'Endless', 'Reflex', 'High Score'],
+    thumbnail: 'games/slope/slope4.jpeg',
+    desc: 'Speed down an unpredictable neon 3D downhill slope at breakneck velocity. Dodge red blocks, launch off mega ramps, and survive.',
+    instructions: 'Steer the rolling ball left and right to dodge obstacles, stay centered on falling platforms, and score points by traveling farther.',
+    controls: [
+      { key: '← → / A D', action: 'Steer Ball Left & Right' }
     ],
-    "desc": "The iconic 90s serpent rebuilt with razor-sharp neon vector graphics, power pellets, golden apples, and silky smooth 60FPS trails.",
-    "instructions": "Guide the glowing serpent to consume power nodes. Avoid colliding with walls or your own tail.",
-    "controls": [
-      {
-        "key": "Arrow Keys / WASD",
-        "action": "Change Direction"
-      },
-      {
-        "key": "Swipe / D-Pad",
-        "action": "Mobile Turn"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "touch"
-    ],
-    "hot": true,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#070c16\"/>\n    <path d=\"M0,40 H400 M0,80 H400 M0,120 H400 M0,160 H400 M0,200 H400\" stroke=\"#101d32\" stroke-width=\"1\"/>\n    <path d=\"M40,0 V240 M80,0 V240 M120,0 V240 M160,0 V240 M200,0 V240 M240,0 V240 M280,0 V240 M320,0 V240 M360,0 V240\" stroke=\"#101d32\" stroke-width=\"1\"/>\n    <circle cx=\"280\" cy=\"100\" r=\"10\" fill=\"#ff007f\"/>\n    <circle cx=\"280\" cy=\"100\" r=\"4\" fill=\"#ffffff\"/>\n    <circle cx=\"120\" cy=\"180\" r=\"8\" fill=\"#ffd700\"/>\n    <g stroke=\"#00ffcc\" stroke-width=\"16\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\">\n      <path d=\"M80,140 L160,140 L160,60 L240,60 L240,100\"/>\n    </g>\n    <g stroke=\"#ffffff\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\">\n      <path d=\"M90,140 L160,140 L160,60 L240,60 L240,100\"/>\n    </g>\n  </svg>"
+    hot: true,
+    featured: true
   },
   {
-    "id": "tetra-blocks",
-    "title": "Tetra Blocks",
-    "cat": "puzzle",
-    "color": "#d500f9",
-    "tags": [
-      "Tetris",
-      "Blocks",
-      "Brain"
+    id: 'retro-bowl',
+    title: 'Retro Bowl',
+    cat: 'sports',
+    color: '#ffb300',
+    tags: ['Football', 'NFL', 'Pixel Art', 'Career'],
+    thumbnail: 'assets/icons/retro_bowl_icon.webp',
+    desc: 'The acclaimed 8-bit American football simulation. Manage your roster, call offensive plays, bullet passes to receivers, and win the championship.',
+    instructions: 'Drag and release to aim and throw football passes. Tap ball carrier to dive forward, hurdle tacklers, and score touchdowns.',
+    controls: [
+      { key: 'Mouse Click & Drag', action: 'Aim & Throw Football' },
+      { key: 'Tap / Click', action: 'Dodge / Dive' }
     ],
-    "desc": "The timeless falling block-stacking puzzle. Clear lines, queue hold pieces, track ghost projections, and chase the 4-line Tetris.",
-    "instructions": "Rotate and slot falling polyomino shapes into solid horizontal rows. Cleared rows yield massive score combos.",
-    "controls": [
-      {
-        "key": "\u2190 / \u2192",
-        "action": "Move Left / Right"
-      },
-      {
-        "key": "\u2191 / X",
-        "action": "Rotate Clockwise"
-      },
-      {
-        "key": "Space",
-        "action": "Hard Drop"
-      },
-      {
-        "key": "\u2193",
-        "action": "Soft Drop"
-      },
-      {
-        "key": "C",
-        "action": "Hold Piece"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "touch"
-    ],
-    "hot": true,
-    "featured": true,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#0d0c1d\"/>\n    <rect x=\"130\" y=\"10\" width=\"140\" height=\"220\" fill=\"#14132b\" stroke=\"#2e2b58\" stroke-width=\"2\" rx=\"4\"/>\n    <rect x=\"132\" y=\"208\" width=\"20\" height=\"20\" fill=\"#00e5ff\" rx=\"2\"/>\n    <rect x=\"153\" y=\"208\" width=\"20\" height=\"20\" fill=\"#00e5ff\" rx=\"2\"/>\n    <rect x=\"174\" y=\"208\" width=\"20\" height=\"20\" fill=\"#ff0055\" rx=\"2\"/>\n    <rect x=\"195\" y=\"208\" width=\"20\" height=\"20\" fill=\"#ff0055\" rx=\"2\"/>\n    <rect x=\"216\" y=\"208\" width=\"20\" height=\"20\" fill=\"#ffd700\" rx=\"2\"/>\n    <rect x=\"237\" y=\"208\" width=\"20\" height=\"20\" fill=\"#ffd700\" rx=\"2\"/>\n    <rect x=\"132\" y=\"186\" width=\"20\" height=\"20\" fill=\"#76ff03\" rx=\"2\"/>\n    <rect x=\"153\" y=\"186\" width=\"20\" height=\"20\" fill=\"#76ff03\" rx=\"2\"/>\n    <rect x=\"174\" y=\"186\" width=\"20\" height=\"20\" fill=\"#d500f9\" rx=\"2\"/>\n    <rect x=\"237\" y=\"186\" width=\"20\" height=\"20\" fill=\"#ff6d00\" rx=\"2\"/>\n    <g>\n      <rect x=\"174\" y=\"80\" width=\"22\" height=\"22\" fill=\"#d500f9\" rx=\"3\"/>\n      <rect x=\"197\" y=\"80\" width=\"22\" height=\"22\" fill=\"#d500f9\" rx=\"3\"/>\n      <rect x=\"220\" y=\"80\" width=\"22\" height=\"22\" fill=\"#d500f9\" rx=\"3\"/>\n      <rect x=\"197\" y=\"57\" width=\"22\" height=\"22\" fill=\"#d500f9\" rx=\"3\"/>\n    </g>\n  </svg>"
+    hot: true,
+    featured: true
   },
   {
-    "id": "space-invaders",
-    "title": "Space Invaders",
-    "cat": "retro",
-    "color": "#00e5ff",
-    "tags": [
-      "Arcade",
-      "Shooter",
-      "Sci-Fi"
+    id: 'subway-surfers',
+    title: 'Subway Surfers',
+    cat: 'arcade',
+    color: '#00b0ff',
+    tags: ['3D Runner', 'Parkour', 'Dodge Trains', 'Coins'],
+    thumbnail: 'assets/icons/subway.webp',
+    desc: 'Dash along subway tracks, vault over train cars, weave through barriers, and ride hoverboards while escaping the grumpy inspector.',
+    instructions: 'Swipe or press keys to switch lanes, jump over barricades, and roll underneath oncoming hazards. Double tap for hoverboard.',
+    controls: [
+      { key: '↑ / W', action: 'Jump' },
+      { key: '↓ / S', action: 'Roll / Slide' },
+      { key: '← → / A D', action: 'Switch Lanes' },
+      { key: 'Space', action: 'Activate Hoverboard' }
     ],
-    "desc": "Battle descending waves of alien warships. Take cover behind destructible plasma bunkers and blast the mystery mother-craft.",
-    "instructions": "Move your plasma tank left and right. Shoot descending alien squadrons before they touch the ground.",
-    "controls": [
-      {
-        "key": "\u2190 / \u2192 or A / D",
-        "action": "Move Cannon"
-      },
-      {
-        "key": "Space",
-        "action": "Fire Plasma Bolt"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "touch"
-    ],
-    "hot": true,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#040711\"/>\n    <circle cx=\"50\" cy=\"40\" r=\"1.5\" fill=\"#fff\"/><circle cx=\"240\" cy=\"30\" r=\"1.5\" fill=\"#fff\"/><circle cx=\"340\" cy=\"80\" r=\"1.5\" fill=\"#fff\"/>\n    <path d=\"M175,25 Q200,12 225,25 L235,32 Q200,36 165,32 Z\" fill=\"#ff1744\"/>\n    <ellipse cx=\"200\" cy=\"22\" rx=\"10\" ry=\"5\" fill=\"#ffcdd2\"/>\n    <g fill=\"#00e676\" transform=\"translate(110, 60)\"><rect width=\"28\" height=\"18\" rx=\"2\"/><circle cx=\"8\" cy=\"8\" r=\"3\" fill=\"#040711\"/><circle cx=\"20\" cy=\"8\" r=\"3\" fill=\"#040711\"/></g>\n    <g fill=\"#00e676\" transform=\"translate(180, 60)\"><rect width=\"28\" height=\"18\" rx=\"2\"/><circle cx=\"8\" cy=\"8\" r=\"3\" fill=\"#040711\"/><circle cx=\"20\" cy=\"8\" r=\"3\" fill=\"#040711\"/></g>\n    <g fill=\"#00e676\" transform=\"translate(250, 60)\"><rect width=\"28\" height=\"18\" rx=\"2\"/><circle cx=\"8\" cy=\"8\" r=\"3\" fill=\"#040711\"/><circle cx=\"20\" cy=\"8\" r=\"3\" fill=\"#040711\"/></g>\n    <g fill=\"#00e5ff\" transform=\"translate(110, 95)\"><rect width=\"28\" height=\"18\" rx=\"2\"/><circle cx=\"7\" cy=\"7\" r=\"3\" fill=\"#040711\"/><circle cx=\"21\" cy=\"7\" r=\"3\" fill=\"#040711\"/></g>\n    <g fill=\"#00e5ff\" transform=\"translate(180, 95)\"><rect width=\"28\" height=\"18\" rx=\"2\"/><circle cx=\"7\" cy=\"7\" r=\"3\" fill=\"#040711\"/><circle cx=\"21\" cy=\"7\" r=\"3\" fill=\"#040711\"/></g>\n    <g fill=\"#00e5ff\" transform=\"translate(250, 95)\"><rect width=\"28\" height=\"18\" rx=\"2\"/><circle cx=\"7\" cy=\"7\" r=\"3\" fill=\"#040711\"/><circle cx=\"21\" cy=\"7\" r=\"3\" fill=\"#040711\"/></g>\n    <line x1=\"200\" y1=\"180\" x2=\"200\" y2=\"130\" stroke=\"#00e5ff\" stroke-width=\"3\"/>\n    <g transform=\"translate(182, 195)\"><rect y=\"12\" width=\"36\" height=\"16\" rx=\"3\" fill=\"#76ff03\"/><rect x=\"14\" y=\"4\" width=\"8\" height=\"12\" fill=\"#76ff03\"/></g>\n  </svg>"
+    hot: true
   },
   {
-    "id": "brick-breaker",
-    "title": "Brick Breaker Deluxe",
-    "cat": "arcade",
-    "color": "#ff9100",
-    "tags": [
-      "Arkanoid",
-      "Breakout",
-      "Action"
+    id: 'cookie-clicker',
+    title: 'Cookie Clicker',
+    cat: 'arcade',
+    color: '#d7ccc8',
+    tags: ['Idle', 'Clicker', 'Upgrades', 'Addictive'],
+    thumbnail: 'games/cookie-clicker/cookie1.jpeg',
+    desc: 'The original iconic idle clicker. Click the giant cookie to produce batches, hire grandmas, construct cookie farms, and buy cosmic upgrades.',
+    instructions: 'Click the big cookie to earn cookies. Spend cookies on auto-clickers, farms, mines, and factories to automate billions of cookies per second.',
+    controls: [
+      { key: 'Left Click', action: 'Click Giant Cookie & Buy Upgrades' }
     ],
-    "desc": "Smash through fortified brick walls with blazing energy balls, multiball cascades, laser cannons, and explosive chain reactions.",
-    "instructions": "Bounce the ball off your paddle to eliminate all bricks. Catch power-ups: lasers, multi-ball, and paddle expanders.",
-    "controls": [
-      {
-        "key": "Mouse / Touch",
-        "action": "Move Paddle"
-      },
-      {
-        "key": "Space / Click",
-        "action": "Launch Ball"
-      }
-    ],
-    "controlTypes": [
-      "mouse",
-      "keyboard",
-      "touch"
-    ],
-    "hot": true,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#0a0814\"/>\n    <rect x=\"40\" y=\"40\" width=\"46\" height=\"16\" fill=\"#ff1744\" rx=\"3\"/>\n    <rect x=\"92\" y=\"40\" width=\"46\" height=\"16\" fill=\"#ff1744\" rx=\"3\"/>\n    <rect x=\"144\" y=\"40\" width=\"46\" height=\"16\" fill=\"#ff1744\" rx=\"3\"/>\n    <rect x=\"196\" y=\"40\" width=\"46\" height=\"16\" fill=\"#ff1744\" rx=\"3\"/>\n    <rect x=\"248\" y=\"40\" width=\"46\" height=\"16\" fill=\"#ff1744\" rx=\"3\"/>\n    <rect x=\"300\" y=\"40\" width=\"46\" height=\"16\" fill=\"#ff1744\" rx=\"3\"/>\n    <rect x=\"40\" y=\"62\" width=\"46\" height=\"16\" fill=\"#ff9100\" rx=\"3\"/>\n    <rect x=\"92\" y=\"62\" width=\"46\" height=\"16\" fill=\"#ff9100\" rx=\"3\"/>\n    <rect x=\"144\" y=\"62\" width=\"46\" height=\"16\" fill=\"#ff9100\" rx=\"3\"/>\n    <rect x=\"248\" y=\"62\" width=\"46\" height=\"16\" fill=\"#ff9100\" rx=\"3\"/>\n    <rect x=\"300\" y=\"62\" width=\"46\" height=\"16\" fill=\"#ff9100\" rx=\"3\"/>\n    <circle cx=\"210\" cy=\"105\" r=\"9\" fill=\"#ffffff\"/>\n    <rect x=\"190\" y=\"205\" width=\"90\" height=\"14\" rx=\"7\" fill=\"#00e5ff\"/>\n  </svg>"
+    hot: true
   },
   {
-    "id": "g2048",
-    "title": "2048 Master",
-    "cat": "puzzle",
-    "color": "#edc22e",
-    "tags": [
-      "Numbers",
-      "Merge",
-      "Addictive"
+    id: 'fireboywatergirlforesttemple',
+    title: 'Fireboy & Watergirl',
+    cat: 'puzzle',
+    color: '#ff3d00',
+    tags: ['Co-op', '2 Player', 'Elements', 'Platformer'],
+    thumbnail: 'games/fireboywatergirlforesttemple/logo.jpeg',
+    desc: 'The premier co-op puzzle platformer. Team up as Fireboy and Watergirl to operate ancient temple mechanisms, avoid green goo, and collect gems.',
+    instructions: 'Guide Fireboy through red lava and Watergirl through blue water. Neither can touch opposing pools or green toxic slime.',
+    controls: [
+      { key: 'Arrow Keys', action: 'Move Fireboy' },
+      { key: 'A W D', action: 'Move Watergirl' }
     ],
-    "desc": "Slide and combine matching numbers to forge the elusive 2048 tile. Features undo history, stats, and infinite mode.",
-    "instructions": "Swipe or press arrow keys to slide tiles across the 4x4 grid. When two tiles with the same number touch, they merge into one!",
-    "controls": [
-      {
-        "key": "Arrow Keys / WASD",
-        "action": "Slide Grid"
-      },
-      {
-        "key": "Swipe",
-        "action": "Mobile Slide"
-      },
-      {
-        "key": "U",
-        "action": "Undo Move"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "touch"
-    ],
-    "hot": true,
-    "featured": true,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#1a1714\"/>\n    <rect x=\"110\" y=\"20\" width=\"180\" height=\"180\" rx=\"10\" fill=\"#bbada0\"/>\n    <rect x=\"118\" y=\"28\" width=\"36\" height=\"36\" rx=\"6\" fill=\"#eee4da\"/><text x=\"136\" y=\"52\" fill=\"#776e65\" font-family=\"sans-serif\" font-size=\"18\" font-weight=\"bold\" text-anchor=\"middle\">2</text>\n    <rect x=\"160\" y=\"28\" width=\"36\" height=\"36\" rx=\"6\" fill=\"#ede0c8\"/><text x=\"178\" y=\"52\" fill=\"#776e65\" font-family=\"sans-serif\" font-size=\"18\" font-weight=\"bold\" text-anchor=\"middle\">4</text>\n    <rect x=\"202\" y=\"28\" width=\"36\" height=\"36\" rx=\"6\" fill=\"#f2b179\"/><text x=\"220\" y=\"52\" fill=\"#f9f6f2\" font-family=\"sans-serif\" font-size=\"18\" font-weight=\"bold\" text-anchor=\"middle\">8</text>\n    <rect x=\"244\" y=\"28\" width=\"36\" height=\"36\" rx=\"6\" fill=\"#f59563\"/><text x=\"262\" y=\"52\" fill=\"#f9f6f2\" font-family=\"sans-serif\" font-size=\"16\" font-weight=\"bold\" text-anchor=\"middle\">16</text>\n    <rect x=\"118\" y=\"70\" width=\"36\" height=\"36\" rx=\"6\" fill=\"#f67c5f\"/><text x=\"136\" y=\"94\" fill=\"#f9f6f2\" font-family=\"sans-serif\" font-size=\"16\" font-weight=\"bold\" text-anchor=\"middle\">32</text>\n    <rect x=\"160\" y=\"70\" width=\"36\" height=\"36\" rx=\"6\" fill=\"#f65e3b\"/><text x=\"178\" y=\"94\" fill=\"#f9f6f2\" font-family=\"sans-serif\" font-size=\"16\" font-weight=\"bold\" text-anchor=\"middle\">64</text>\n    <rect x=\"202\" y=\"70\" width=\"36\" height=\"36\" rx=\"6\" fill=\"#edcf72\"/><text x=\"220\" y=\"94\" fill=\"#f9f6f2\" font-family=\"sans-serif\" font-size=\"14\" font-weight=\"bold\" text-anchor=\"middle\">128</text>\n    <rect x=\"244\" y=\"70\" width=\"36\" height=\"36\" rx=\"6\" fill=\"#edcc61\"/><text x=\"262\" y=\"94\" fill=\"#f9f6f2\" font-family=\"sans-serif\" font-size=\"14\" font-weight=\"bold\" text-anchor=\"middle\">256</text>\n    <rect x=\"118\" y=\"112\" width=\"36\" height=\"36\" rx=\"6\" fill=\"#edc850\"/><text x=\"136\" y=\"136\" fill=\"#f9f6f2\" font-family=\"sans-serif\" font-size=\"14\" font-weight=\"bold\" text-anchor=\"middle\">512</text>\n    <rect x=\"160\" y=\"112\" width=\"36\" height=\"36\" rx=\"6\" fill=\"#edc53f\"/><text x=\"178\" y=\"136\" fill=\"#f9f6f2\" font-family=\"sans-serif\" font-size=\"13\" font-weight=\"bold\" text-anchor=\"middle\">1024</text>\n    <rect x=\"202\" y=\"112\" width=\"78\" height=\"78\" rx=\"8\" fill=\"#edc22e\"/>\n    <text x=\"241\" y=\"160\" fill=\"#ffffff\" font-family=\"sans-serif\" font-size=\"26\" font-weight=\"900\" text-anchor=\"middle\">2048</text>\n  </svg>"
+    hot: true,
+    featured: true
   },
   {
-    "id": "flappy-raptor",
-    "title": "Flappy Raptor",
-    "cat": "arcade",
-    "color": "#00d4ff",
-    "tags": [
-      "Physics",
-      "Flapping",
-      "Skill"
+    id: 'bad-ice-cream',
+    title: 'Bad Ice Cream',
+    cat: 'arcade',
+    color: '#00e5ff',
+    tags: ['Nitrome', '2 Player', 'Retro', 'Fruit Match'],
+    thumbnail: 'games/bad-ice-cream/bad-ice-cream.png',
+    desc: 'Nitrome classic puzzle arcade. Play as cheeky ice cream creating and shattering walls of frost while gathering fresh fruits and evading beasts.',
+    instructions: 'Collect all the fruits in each stage before time runs out. Use frost breath to build ice walls to block monsters or break ice blocks.',
+    controls: [
+      { key: 'Arrow Keys', action: 'Move Ice Cream' },
+      { key: 'Spacebar', action: 'Create / Break Ice Wall' }
     ],
-    "desc": "Guide your winged baby raptor through razor-sharp prehistoric basalt columns. Simple one-button tap physics.",
-    "instructions": "Tap or press Space to flap wings and gain height. Time your flaps to navigate between basalt cavern columns.",
-    "controls": [
-      {
-        "key": "Space / Click",
-        "action": "Flap Wings"
-      },
-      {
-        "key": "Touch Screen",
-        "action": "Tap to Flap"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "mouse",
-      "touch"
-    ],
-    "hot": false,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <defs>\n      <linearGradient id=\"fr-sky\" x1=\"0%\" y1=\"0%\" x2=\"0%\" y2=\"100%\">\n        <stop offset=\"0%\" stop-color=\"#4fc3f7\"/><stop offset=\"100%\" stop-color=\"#e1f5fe\"/>\n      </linearGradient>\n    </defs>\n    <rect width=\"400\" height=\"240\" fill=\"url(#fr-sky)\"/>\n    <rect x=\"260\" y=\"0\" width=\"48\" height=\"80\" fill=\"#37474f\" rx=\"3\"/>\n    <rect x=\"260\" y=\"150\" width=\"48\" height=\"90\" fill=\"#37474f\" rx=\"3\"/>\n    <g transform=\"translate(130, 105)\">\n      <path d=\"M-8,-4 Q-15,-25 15,-15 Q5,-2 -5,-2 Z\" fill=\"#ff5722\"/>\n      <ellipse cx=\"10\" cy=\"4\" rx=\"16\" ry=\"12\" fill=\"#ff9800\"/>\n      <circle cx=\"22\" cy=\"-2\" r=\"10\" fill=\"#ff9800\"/>\n      <path d=\"M28,-4 L40,-1 L28,4 Z\" fill=\"#d84315\"/>\n      <circle cx=\"24\" cy=\"-4\" r=\"4\" fill=\"#fff\"/><circle cx=\"25\" cy=\"-4\" r=\"2\" fill=\"#000\"/>\n    </g>\n  </svg>"
+    hot: true
   },
   {
-    "id": "pac-maze",
-    "title": "Pac-Maze",
-    "cat": "retro",
-    "color": "#ffd600",
-    "tags": [
-      "Pac-Man",
-      "Arcade",
-      "Labyrinth"
-    ],
-    "desc": "Navigate the neon labyrinth, gobble dots and energizers, outwit 4 ghost hunters, and trigger ghost-eating frenzies.",
-    "instructions": "Guide the yellow hero through maze corridors. Eat big energizer pellets to turn the ghosts blue and munch them for points.",
-    "controls": [
-      {
-        "key": "Arrow Keys / WASD",
-        "action": "Turn Corner"
-      },
-      {
-        "key": "Swipe / D-Pad",
-        "action": "Mobile Turn"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "touch"
-    ],
-    "hot": true,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#050510\"/>\n    <path d=\"M30,30 H370 V210 H30 Z\" fill=\"none\" stroke=\"#1976d2\" stroke-width=\"4\" rx=\"8\"/>\n    <circle cx=\"50\" cy=\"50\" r=\"3\" fill=\"#ffcc80\"/><circle cx=\"80\" cy=\"50\" r=\"3\" fill=\"#ffcc80\"/><circle cx=\"110\" cy=\"50\" r=\"3\" fill=\"#ffcc80\"/><circle cx=\"350\" cy=\"50\" r=\"6\" fill=\"#ffffff\"/>\n    <g transform=\"translate(195, 128)\"><path d=\"M 0,0 L 16,-12 A 20,20 0 1,0 16,12 Z\" fill=\"#ffd600\"/></g>\n    <g transform=\"translate(255, 115)\">\n      <path d=\"M0,18 V8 A12,12 0 0,1 24,8 V18 L20,15 L16,18 L12,15 L8,18 L4,15 Z\" fill=\"#ff1744\"/>\n      <circle cx=\"7\" cy=\"8\" r=\"3\" fill=\"#fff\"/><circle cx=\"6\" cy=\"8\" r=\"1.5\" fill=\"#00f\"/>\n    </g>\n  </svg>"
+    id: 'bad-ice-cream-2',
+    title: 'Bad Ice Cream 2',
+    cat: 'arcade',
+    color: '#76ff03',
+    tags: ['Nitrome', '2 Player', 'Sequel', 'Co-op'],
+    thumbnail: 'games/bad-ice-cream-2/bad-ice-cream-2.png',
+    desc: 'The second chilly adventure packed with new exotic fruits, frozen obstacles, clever enemy AI, and 2-player cooperative battles.',
+    instructions: 'Devour all fruits on screen while freezing paths or smashing ice columns to outmaneuver patrol beasts.',
+    controls: [
+      { key: 'Arrow Keys / WASD', action: 'Move Player 1 / 2' },
+      { key: 'Space / F', action: 'Freeze / Break Ice' }
+    ]
   },
   {
-    "id": "minesweeper",
-    "title": "Minesweeper Retro",
-    "cat": "puzzle",
-    "color": "#90a4ae",
-    "tags": [
-      "Logic",
-      "Classic",
-      "Strategy"
+    id: 'drive-mad',
+    title: 'Drive Mad',
+    cat: 'driving',
+    color: '#ff9100',
+    tags: ['Voxel', 'Physics', 'Obstacles', 'Levels'],
+    thumbnail: 'games/drive-mad/logo.jpg',
+    desc: 'Wobbly 3D voxel physics driving. Balance your 4x4 truck across crumbling bridges, flips, loopings, and puzzle tracks to reach the checkered flag.',
+    instructions: 'Carefully regulate your speed. Too much gas can flip your truck backwards; balance throttle and brakes to negotiate tricky physics ramps.',
+    controls: [
+      { key: 'W / ↑ / D', action: 'Accelerate Forward' },
+      { key: 'S / ↓ / A', action: 'Brake / Reverse' }
     ],
-    "desc": "The definitive deduction classic. Clear minefields using numerical proximity clues with Beginner, Intermediate, and Expert grids.",
-    "instructions": "Click tiles to reveal numbers indicating adjacent mines. Right click or toggle flag mode to mark dangerous mines.",
-    "controls": [
-      {
-        "key": "Left Click",
-        "action": "Reveal Cell"
-      },
-      {
-        "key": "Right Click",
-        "action": "Place Flag"
-      },
-      {
-        "key": "Face Icon",
-        "action": "Restart Game"
-      }
-    ],
-    "controlTypes": [
-      "mouse",
-      "touch"
-    ],
-    "hot": false,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#1c2024\"/>\n    <rect x=\"90\" y=\"15\" width=\"220\" height=\"210\" fill=\"#c0c0c0\" stroke=\"#ffffff\" stroke-width=\"2\" rx=\"3\"/>\n    <rect x=\"108\" y=\"30\" width=\"45\" height=\"26\" fill=\"#000\"/><text x=\"130\" y=\"50\" fill=\"#ff0000\" font-family=\"monospace\" font-size=\"18\" font-weight=\"bold\" text-anchor=\"middle\">010</text>\n    <circle cx=\"199\" cy=\"43\" r=\"9\" fill=\"#ffeb3b\" stroke=\"#000\" stroke-width=\"1\"/>\n    <g transform=\"translate(102, 70)\">\n      <rect x=\"0\" y=\"0\" width=\"24\" height=\"24\" fill=\"#e0e0e0\" stroke=\"#9e9e9e\"/><text x=\"12\" y=\"18\" fill=\"#0000ff\" font-family=\"sans-serif\" font-size=\"16\" font-weight=\"bold\" text-anchor=\"middle\">1</text>\n      <rect x=\"25\" y=\"0\" width=\"24\" height=\"24\" fill=\"#e0e0e0\" stroke=\"#9e9e9e\"/><text x=\"37\" y=\"18\" fill=\"#008000\" font-family=\"sans-serif\" font-size=\"16\" font-weight=\"bold\" text-anchor=\"middle\">2</text>\n      <rect x=\"50\" y=\"0\" width=\"24\" height=\"24\" fill=\"#e0e0e0\" stroke=\"#9e9e9e\"/><text x=\"62\" y=\"18\" fill=\"#ff0000\" font-family=\"sans-serif\" font-size=\"16\" font-weight=\"bold\" text-anchor=\"middle\">3</text>\n      <rect x=\"75\" y=\"0\" width=\"24\" height=\"24\" fill=\"#c0c0c0\" stroke=\"#fff\" stroke-width=\"2\"/>\n      <rect x=\"100\" y=\"0\" width=\"24\" height=\"24\" fill=\"#c0c0c0\" stroke=\"#fff\" stroke-width=\"2\"/>\n      <polygon points=\"108,5 118,9 108,13\" fill=\"#ff0000\"/><line x1=\"108\" y1=\"5\" x2=\"108\" y2=\"19\" stroke=\"#000\" stroke-width=\"2\"/>\n    </g>\n  </svg>"
+    hot: true
   },
   {
-    "id": "connect-four",
-    "title": "Connect Four",
-    "cat": "strategy",
-    "color": "#2979ff",
-    "tags": [
-      "Board Game",
-      "2 Player",
-      "Minimax AI"
+    id: 'drift-boss',
+    title: 'Drift Boss',
+    cat: 'driving',
+    color: '#e040fb',
+    tags: ['Drifting', 'One Touch', 'Timing', 'Score Attack'],
+    thumbnail: 'assets/icons/driftboss.webp',
+    desc: 'High-precision one-button drifting on an infinite winding platform. Time your cornering turns with razor precision to keep wheels on the asphalt.',
+    instructions: 'Press and hold to drift right; release to drift left. Anticipate sharp corners, ramps, and narrow track sections.',
+    controls: [
+      { key: 'Spacebar / Left Click', action: 'Hold to Drift Right, Release for Left' }
     ],
-    "desc": "The vertical four-in-a-row showdown. Challenge the strategic Minimax AI or battle a friend locally in 2-Player mode.",
-    "instructions": "Drop colored tokens into the 7 vertical columns. Connect 4 of your pieces horizontally, vertically, or diagonally to win.",
-    "controls": [
-      {
-        "key": "Click Column / 1-7",
-        "action": "Drop Token"
-      },
-      {
-        "key": "Touch Column",
-        "action": "Mobile Drop"
-      }
-    ],
-    "controlTypes": [
-      "mouse",
-      "keyboard",
-      "touch"
-    ],
-    "hot": true,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#0d1424\"/>\n    <rect x=\"80\" y=\"40\" width=\"240\" height=\"165\" rx=\"12\" fill=\"#1565c0\"/>\n    <circle cx=\"105\" cy=\"125\" r=\"12\" fill=\"#ff1744\"/><circle cx=\"105\" cy=\"155\" r=\"12\" fill=\"#ffd600\"/><circle cx=\"105\" cy=\"185\" r=\"12\" fill=\"#ff1744\"/>\n    <circle cx=\"137\" cy=\"155\" r=\"12\" fill=\"#ffd600\"/><circle cx=\"137\" cy=\"185\" r=\"12\" fill=\"#ffd600\"/>\n    <circle cx=\"169\" cy=\"65\" r=\"12\" fill=\"#ff1744\"/><circle cx=\"201\" cy=\"95\" r=\"12\" fill=\"#ff1744\"/><circle cx=\"233\" cy=\"125\" r=\"12\" fill=\"#ff1744\"/><circle cx=\"265\" cy=\"155\" r=\"12\" fill=\"#ff1744\"/>\n    <line x1=\"169\" y1=\"65\" x2=\"265\" y2=\"155\" stroke=\"#ffffff\" stroke-width=\"4\" stroke-linecap=\"round\"/>\n  </svg>"
+    hot: true
   },
   {
-    "id": "tower-stack",
-    "title": "Tower Stack",
-    "cat": "arcade",
-    "color": "#ff4081",
-    "tags": [
-      "Timing",
-      "3D Stack",
-      "Casual"
+    id: 'crossyroad',
+    title: 'Crossy Road',
+    cat: 'arcade',
+    color: '#ffd600',
+    tags: ['Voxel', 'Endless Hop', 'Traffic', 'Classic'],
+    thumbnail: 'games/crossyroad/crossyroad.png',
+    desc: 'Hipster Whale endless arcade hit. Hop across busy multi-lane highways, dodge speeding semi-trucks, leap across floating logs, and evade trains.',
+    instructions: 'Time your hops across roads and rivers. Don’t stay idle too long or the swooping hawk will snatch your character!',
+    controls: [
+      { key: '↑ / W', action: 'Hop Forward' },
+      { key: '← ↓ → / A S D', action: 'Hop Left, Back, Right' }
     ],
-    "desc": "Stack dynamic geometric slabs skyward. Overhanging edges are sheared off by physics. Hit consecutive perfect placements to grow.",
-    "instructions": "Tap or press Space when the sliding slab aligns with the tower below. Time it right to build into the atmosphere.",
-    "controls": [
-      {
-        "key": "Space / Click",
-        "action": "Place Slab"
-      },
-      {
-        "key": "Touch Screen",
-        "action": "Tap to Stack"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "mouse",
-      "touch"
-    ],
-    "hot": false,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <defs>\n      <linearGradient id=\"ts-sky\" x1=\"0%\" y1=\"0%\" x2=\"0%\" y2=\"100%\">\n        <stop offset=\"0%\" stop-color=\"#1a0933\"/><stop offset=\"100%\" stop-color=\"#8c1d68\"/>\n      </linearGradient>\n    </defs>\n    <rect width=\"400\" height=\"240\" fill=\"url(#ts-sky)\"/>\n    <g transform=\"translate(200, 190)\"><polygon points=\"0,-20 80,10 0,40 -80,10\" fill=\"#7b1fa2\"/><polygon points=\"0,40 80,10 80,30 0,60\" fill=\"#4a148c\"/></g>\n    <g transform=\"translate(200, 160)\"><polygon points=\"0,-20 75,10 0,40 -75,10\" fill=\"#c2185b\"/><polygon points=\"0,40 75,10 75,30 0,60\" fill=\"#880e4f\"/></g>\n    <g transform=\"translate(200, 130)\"><polygon points=\"0,-20 70,10 0,40 -70,10\" fill=\"#f57c00\"/><polygon points=\"0,40 70,10 70,30 0,60\" fill=\"#e65100\"/></g>\n    <g transform=\"translate(225, 80)\"><polygon points=\"0,-20 65,10 0,40 -65,10\" fill=\"#00e5ff\"/><polygon points=\"0,40 65,10 65,30 0,60\" fill=\"#0097a7\"/></g>\n  </svg>"
+    hot: true
   },
   {
-    "id": "asteroid-belt",
-    "title": "Asteroid Belt",
-    "cat": "action",
-    "color": "#69f0ae",
-    "tags": [
-      "Asteroids",
-      "Vector",
-      "Space Combat"
+    id: 'basket-random',
+    title: 'Basket Random',
+    cat: 'sports',
+    color: '#ff6d00',
+    tags: ['Ragdoll', 'Basketball', '2 Player', 'Physics'],
+    thumbnail: 'games/basket-random/splash.jpeg',
+    desc: 'Hilarious one-button ragdoll basketball. Compete on unpredictable courts with bobbing heads, bouncy balls, and wild slam dunks. First to 5 wins!',
+    instructions: 'Press jump to leap and toss the basketball. Score baskets by dunking or bouncing the ball through the hoop.',
+    controls: [
+      { key: 'W Key', action: 'Player 1 Jump & Shoot' },
+      { key: '↑ Arrow', action: 'Player 2 Jump & Shoot' }
     ],
-    "desc": "Full 360-degree vector space combat. Maneuver with realistic zero-gravity inertia, shatter massive space rocks, and hyperspace away.",
-    "instructions": "Rotate your vector spacecraft, apply thrusters to drift, and fire cannons to split large asteroids into smaller fragments.",
-    "controls": [
-      {
-        "key": "\u2190 / \u2192",
-        "action": "Rotate 360\u00b0"
-      },
-      {
-        "key": "\u2191 / W",
-        "action": "Thrust Forward"
-      },
-      {
-        "key": "Space",
-        "action": "Fire Lasers"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "touch"
-    ],
-    "hot": false,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#050811\"/>\n    <polygon points=\"70,70 110,60 140,85 130,125 90,140 50,110\" fill=\"none\" stroke=\"#69f0ae\" stroke-width=\"2.5\"/>\n    <polygon points=\"290,50 320,40 340,65 330,85 300,90 280,75\" fill=\"none\" stroke=\"#69f0ae\" stroke-width=\"2\"/>\n    <line x1=\"220\" y1=\"115\" x2=\"280\" y2=\"75\" stroke=\"#00e5ff\" stroke-width=\"2.5\"/>\n    <g transform=\"translate(200, 120) rotate(-45)\">\n      <polygon points=\"0,-18 12,14 0,8 -12,14\" fill=\"#050811\" stroke=\"#ffffff\" stroke-width=\"2.5\"/>\n      <polygon points=\"-5,11 0,22 5,11\" fill=\"#ff9100\"/>\n    </g>\n  </svg>"
+    hot: true
   },
   {
-    "id": "cyber-pong",
-    "title": "Cyber Pong",
-    "cat": "sports",
-    "color": "#00e5ff",
-    "tags": [
-      "Table Tennis",
-      "Neon",
-      "2 Player"
+    id: 'basketball-stars',
+    title: 'Basketball Stars',
+    cat: 'sports',
+    color: '#e65100',
+    tags: ['Madpuffers', 'Tournament', 'Dunks', '2 Player'],
+    thumbnail: 'assets/icons/basketball-stars.webp',
+    desc: 'Madpuffers premier basketball showdown. Execute windmill dunks, swat defensive blocks, hit clutch three-pointers, and trigger explosive super shots.',
+    instructions: 'Drive to the basket, shoot from beyond the arc, or steal the ball from opponents in tournament or 2-player head-to-head modes.',
+    controls: [
+      { key: 'WASD / Arrows', action: 'Move & Dash' },
+      { key: 'B / L', action: 'Shoot / Block / Steal' },
+      { key: 'V / K', action: 'Super Shot / Dunk' }
     ],
-    "desc": "High-octane neon table tennis. Put top-spin on the puck, trigger particle shockwaves, and battle the AI or a friend in 2-Player.",
-    "instructions": "Defend your goal and deflect the cyber puck past your opponent. Moving your paddle during contact applies curve and speed.",
-    "controls": [
-      {
-        "key": "W / S or Mouse",
-        "action": "Player 1 Up / Down"
-      },
-      {
-        "key": "\u2191 / \u2193",
-        "action": "Player 2 Up / Down"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "mouse",
-      "touch"
-    ],
-    "hot": false,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#050a14\"/>\n    <line x1=\"200\" y1=\"10\" x2=\"200\" y2=\"230\" stroke=\"#162a45\" stroke-width=\"3\" stroke-dasharray=\"10,10\"/>\n    <rect x=\"30\" y=\"80\" width=\"12\" height=\"65\" rx=\"6\" fill=\"#00e5ff\"/>\n    <rect x=\"358\" y=\"110\" width=\"12\" height=\"65\" rx=\"6\" fill=\"#ff0055\"/>\n    <circle cx=\"120\" cy=\"105\" r=\"9\" fill=\"#ffffff\"/>\n  </svg>"
+    hot: true
   },
   {
-    "id": "memory-cards",
-    "title": "Memory Cards",
-    "cat": "puzzle",
-    "color": "#ab47bc",
-    "tags": [
-      "Card Match",
-      "Brain Training",
-      "Casual"
-    ],
-    "desc": "Test your photographic recall with sleek retro arcade cards. Flip and match matching relics in the fewest moves possible.",
-    "instructions": "Click two cards to flip them face up. If the symbols match, they stay unlocked. Clear the entire board to win.",
-    "controls": [
-      {
-        "key": "Left Click / Tap",
-        "action": "Flip Card"
-      }
-    ],
-    "controlTypes": [
-      "mouse",
-      "touch"
-    ],
-    "hot": false,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#120c1f\"/>\n    <rect x=\"55\" y=\"50\" width=\"55\" height=\"75\" rx=\"8\" fill=\"#2a1b4e\" stroke=\"#7b1fa2\" stroke-width=\"2\"/>\n    <circle cx=\"82\" cy=\"87\" r=\"14\" fill=\"#3f2b6d\"/><text x=\"82\" y=\"93\" fill=\"#ab47bc\" font-family=\"sans-serif\" font-size=\"16\" font-weight=\"bold\" text-anchor=\"middle\">?</text>\n    <rect x=\"125\" y=\"50\" width=\"55\" height=\"75\" rx=\"8\" fill=\"#381c5a\" stroke=\"#00e5ff\" stroke-width=\"2\"/>\n    <polygon points=\"152,70 166,78 160,98 144,98 138,78\" fill=\"#00e5ff\"/>\n    <rect x=\"195\" y=\"50\" width=\"55\" height=\"75\" rx=\"8\" fill=\"#381c5a\" stroke=\"#00e5ff\" stroke-width=\"2\"/>\n    <polygon points=\"222,70 236,78 230,98 214,98 208,78\" fill=\"#00e5ff\"/>\n    <rect x=\"265\" y=\"50\" width=\"55\" height=\"75\" rx=\"8\" fill=\"#2a1b4e\" stroke=\"#7b1fa2\" stroke-width=\"2\"/>\n    <circle cx=\"292\" cy=\"87\" r=\"14\" fill=\"#3f2b6d\"/><text x=\"292\" y=\"93\" fill=\"#ab47bc\" font-family=\"sans-serif\" font-size=\"16\" font-weight=\"bold\" text-anchor=\"middle\">?</text>\n  </svg>"
+    id: 'boxing-random',
+    title: 'Boxing Random',
+    cat: 'sports',
+    color: '#d50000',
+    tags: ['Ragdoll', 'Boxing', 'Fighting', '2 Player'],
+    thumbnail: 'games/boxing-random/512x512.jpg',
+    desc: 'Wacky one-button ragdoll boxing duel. Punch opponents in shifting weather, iced rings, long arm matches, and rocket fists.',
+    instructions: 'Jump and tilt your boxer to deliver knockouts. Score 5 rounds to claim championship glory.',
+    controls: [
+      { key: 'W Key', action: 'Player 1 Punch & Jump' },
+      { key: '↑ Arrow', action: 'Player 2 Punch & Jump' }
+    ]
   },
   {
-    "id": "doodle-leap",
-    "title": "Doodle Leap",
-    "cat": "action",
-    "color": "#76ff03",
-    "tags": [
-      "Vertical Jumper",
-      "Endless",
-      "High Altitude"
+    id: 'rooftop-snipers',
+    title: 'Rooftop Snipers',
+    cat: 'action',
+    color: '#2979ff',
+    tags: ['Sniper Duels', 'Ragdoll', '2 Player', 'Physics'],
+    thumbnail: 'assets/icons/rooftop.webp',
+    desc: 'The iconic rooftop sniper duel. Jump to dodge incoming bullets, line up your crosshair, and knock your opponent off the building skyscraper.',
+    instructions: 'Leap to dodge sniper fire and take aim. First player to score 5 knock-offs wins the match.',
+    controls: [
+      { key: 'W to Jump, E to Shoot', action: 'Player 1' },
+      { key: 'I to Jump, O to Shoot', action: 'Player 2' }
     ],
-    "desc": "Bounce endlessly into the troposphere! Spring off super-coils, dodge crumbling ledges, and climb to record altitudes.",
-    "instructions": "Steer your jumper left or right. The character automatically bounces when landing on platforms. Fall below the screen and it is game over.",
-    "controls": [
-      {
-        "key": "\u2190 / \u2192 or A / D",
-        "action": "Move Left / Right"
-      },
-      {
-        "key": "Mouse / Touch",
-        "action": "Steer Jumper"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "touch"
-    ],
-    "hot": true,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <defs>\n      <linearGradient id=\"dl-sky\" x1=\"0%\" y1=\"0%\" x2=\"0%\" y2=\"100%\">\n        <stop offset=\"0%\" stop-color=\"#0d1b2a\"/><stop offset=\"100%\" stop-color=\"#415a77\"/>\n      </linearGradient>\n    </defs>\n    <rect width=\"400\" height=\"240\" fill=\"url(#dl-sky)\"/>\n    <rect x=\"110\" y=\"190\" width=\"65\" height=\"14\" rx=\"7\" fill=\"#76ff03\"/>\n    <rect x=\"230\" y=\"145\" width=\"65\" height=\"14\" rx=\"7\" fill=\"#00e5ff\"/>\n    <rect x=\"140\" y=\"90\" width=\"65\" height=\"14\" rx=\"7\" fill=\"#76ff03\"/>\n    <path d=\"M165,90 L169,82 L163,77 L169,72\" stroke=\"#ffd700\" stroke-width=\"3\" fill=\"none\"/>\n    <g transform=\"translate(170, 48)\">\n      <ellipse cx=\"0\" cy=\"0\" rx=\"14\" ry=\"18\" fill=\"#aeea00\"/>\n      <circle cx=\"-2\" cy=\"-6\" r=\"4\" fill=\"#fff\"/><circle cx=\"-2\" cy=\"-6\" r=\"2\" fill=\"#000\"/>\n      <circle cx=\"6\" cy=\"-6\" r=\"4\" fill=\"#fff\"/><circle cx=\"6\" cy=\"-6\" r=\"2\" fill=\"#000\"/>\n    </g>\n  </svg>"
+    hot: true
   },
   {
-    "id": "wordle-quest",
-    "title": "Wordle Quest",
-    "cat": "puzzle",
-    "color": "#6aaa64",
-    "tags": [
-      "Word Game",
-      "Deduction",
-      "Vocabulary"
-    ],
-    "desc": "Deduce the secret 5-letter word in 6 attempts. Features Daily Challenge and Unlimited Practice with full English dictionary.",
-    "instructions": "Type a 5-letter guess. Green tiles indicate the correct letter in the right spot; yellow indicates the letter is in the word but elsewhere.",
-    "controls": [
-      {
-        "key": "Keyboard / On-screen Keys",
-        "action": "Type Word"
-      },
-      {
-        "key": "Enter",
-        "action": "Submit Guess"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "touch"
-    ],
-    "hot": true,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#121213\"/>\n    <g transform=\"translate(85, 45)\">\n      <rect x=\"0\" y=\"0\" width=\"40\" height=\"40\" rx=\"4\" fill=\"#6aaa64\"/><text x=\"20\" y=\"27\" fill=\"#fff\" font-family=\"sans-serif\" font-size=\"20\" font-weight=\"bold\" text-anchor=\"middle\">R</text>\n      <rect x=\"46\" y=\"0\" width=\"40\" height=\"40\" rx=\"4\" fill=\"#c9b458\"/><text x=\"66\" y=\"27\" fill=\"#fff\" font-family=\"sans-serif\" font-size=\"20\" font-weight=\"bold\" text-anchor=\"middle\">A</text>\n      <rect x=\"92\" y=\"0\" width=\"40\" height=\"40\" rx=\"4\" fill=\"#3a3a3c\"/><text x=\"112\" y=\"27\" fill=\"#fff\" font-family=\"sans-serif\" font-size=\"20\" font-weight=\"bold\" text-anchor=\"middle\">I</text>\n      <rect x=\"138\" y=\"0\" width=\"40\" height=\"40\" rx=\"4\" fill=\"#3a3a3c\"/><text x=\"158\" y=\"27\" fill=\"#fff\" font-family=\"sans-serif\" font-size=\"20\" font-weight=\"bold\" text-anchor=\"middle\">N</text>\n      <rect x=\"184\" y=\"0\" width=\"40\" height=\"40\" rx=\"4\" fill=\"#3a3a3c\"/><text x=\"204\" y=\"27\" fill=\"#fff\" font-family=\"sans-serif\" font-size=\"20\" font-weight=\"bold\" text-anchor=\"middle\">S</text>\n    </g>\n    <g transform=\"translate(85, 95)\">\n      <rect x=\"0\" y=\"0\" width=\"40\" height=\"40\" rx=\"4\" fill=\"#3a3a3c\"/><text x=\"20\" y=\"27\" fill=\"#fff\" font-family=\"sans-serif\" font-size=\"20\" font-weight=\"bold\" text-anchor=\"middle\">S</text>\n      <rect x=\"46\" y=\"0\" width=\"40\" height=\"40\" rx=\"4\" fill=\"#6aaa64\"/><text x=\"66\" y=\"27\" fill=\"#fff\" font-family=\"sans-serif\" font-size=\"20\" font-weight=\"bold\" text-anchor=\"middle\">H</text>\n      <rect x=\"92\" y=\"0\" width=\"40\" height=\"40\" rx=\"4\" fill=\"#6aaa64\"/><text x=\"112\" y=\"27\" fill=\"#fff\" font-family=\"sans-serif\" font-size=\"20\" font-weight=\"bold\" text-anchor=\"middle\">A</text>\n      <rect x=\"138\" y=\"0\" width=\"40\" height=\"40\" rx=\"4\" fill=\"#6aaa64\"/><text x=\"158\" y=\"27\" fill=\"#fff\" font-family=\"sans-serif\" font-size=\"20\" font-weight=\"bold\" text-anchor=\"middle\">R</text>\n      <rect x=\"184\" y=\"0\" width=\"40\" height=\"40\" rx=\"4\" fill=\"#6aaa64\"/><text x=\"204\" y=\"27\" fill=\"#fff\" font-family=\"sans-serif\" font-size=\"20\" font-weight=\"bold\" text-anchor=\"middle\">K</text>\n    </g>\n  </svg>"
+    id: 'getaway-shootout',
+    title: 'Getaway Shootout',
+    cat: 'action',
+    color: '#651fff',
+    tags: ['Platformer', 'Race', 'Guns', 'Ragdoll'],
+    thumbnail: 'assets/icons/combatreloaded.webp',
+    desc: 'Chaotic race to the extraction helicopter. Leap across moving trains, subway platforms, and rooftops collecting bazookas, shotguns, and jetpacks.',
+    instructions: 'Jump left and right using physics recoil. Grab weapons and power-ups along the course to eliminate rival runners.',
+    controls: [
+      { key: 'W / E', action: 'Jump Left & Right (P1)' },
+      { key: 'R', action: 'Shoot Weapon (P1)' }
+    ]
   },
   {
-    "id": "sudoku",
-    "title": "Sudoku Master",
-    "cat": "puzzle",
-    "color": "#00b0ff",
-    "tags": [
-      "Numbers",
-      "Logic",
-      "Brain Training"
-    ],
-    "desc": "Engaging Japanese 9x9 numerical grid. Features candidate notes, error checking, and timer tracking.",
-    "instructions": "Fill every row, column, and 3x3 box with digits from 1 through 9 without repeating any numbers.",
-    "controls": [
-      {
-        "key": "Click / Touch Cell",
-        "action": "Select Cell"
-      },
-      {
-        "key": "Digits 1-9",
-        "action": "Enter Number"
-      }
-    ],
-    "controlTypes": [
-      "keyboard",
-      "mouse",
-      "touch"
-    ],
-    "hot": false,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#0c1424\"/>\n    <rect x=\"110\" y=\"20\" width=\"180\" height=\"180\" rx=\"4\" fill=\"#111d33\" stroke=\"#00b0ff\" stroke-width=\"2.5\"/>\n    <line x1=\"170\" y1=\"20\" x2=\"170\" y2=\"200\" stroke=\"#00b0ff\" stroke-width=\"2\"/>\n    <line x1=\"230\" y1=\"20\" x2=\"230\" y2=\"200\" stroke=\"#00b0ff\" stroke-width=\"2\"/>\n    <line x1=\"110\" y1=\"80\" x2=\"290\" y2=\"80\" stroke=\"#00b0ff\" stroke-width=\"2\"/>\n    <line x1=\"110\" y1=\"140\" x2=\"290\" y2=\"140\" stroke=\"#00b0ff\" stroke-width=\"2\"/>\n    <text x=\"120\" y=\"42\" fill=\"#ffffff\" font-family=\"sans-serif\" font-size=\"14\" font-weight=\"bold\">5</text>\n    <text x=\"140\" y=\"42\" fill=\"#90caf9\" font-family=\"sans-serif\" font-size=\"14\">3</text>\n    <text x=\"200\" y=\"116\" fill=\"#ffd600\" font-family=\"sans-serif\" font-size=\"22\" font-weight=\"bold\" text-anchor=\"middle\">7</text>\n  </svg>"
+    id: 'tube-jumpers',
+    title: 'Tube Jumpers',
+    cat: 'sports',
+    color: '#00b8d4',
+    tags: ['Water', 'Survival', 'Party', '2 Player'],
+    thumbnail: 'assets/icons/endlesslake.webp',
+    desc: 'Rowdy floating inner-tube survival. Jump to stay aboard your tube while massive waves, beach balls, and hungry sharks attempt to throw you off.',
+    instructions: 'Time your jumps with incoming ocean waves and incoming hazards. Last player remaining afloat scores.',
+    controls: [
+      { key: 'W Key', action: 'Player 1 Jump' },
+      { key: 'I Key', action: 'Player 2 Jump' }
+    ]
   },
   {
-    "id": "missile-defense",
-    "title": "Missile Defense",
-    "cat": "strategy",
-    "color": "#ff3d00",
-    "tags": [
-      "Missile Command",
-      "Arcade",
-      "Defense"
+    id: 'tunnel-rush',
+    title: 'Tunnel Rush',
+    cat: 'skill',
+    color: '#00e5ff',
+    tags: ['3D Speed', 'Tunnel', 'Reflex', 'Hypnotic'],
+    thumbnail: 'assets/icons/tunnelrush.webp',
+    desc: 'Blistering 3D kaleidoscope speed tunnel. Rotate smoothly around the cylindrical walls to dodge rotating barriers and hazard gates at intense speed.',
+    instructions: 'Steer left or right to align your path with open gaps in oncoming rotating hazards. Speed escalates the longer you survive.',
+    controls: [
+      { key: '← → / A D', action: 'Rotate Around Tunnel' }
     ],
-    "desc": "Protect metropolitan skylines from incoming orbital ballistic bombardments. Launch flak warheads to detonate devastating chain reactions.",
-    "instructions": "Click or tap into the night sky to launch interceptor missiles. Incoming rockets that touch exploding blast clouds are vaporized.",
-    "controls": [
-      {
-        "key": "Mouse Click / Tap",
-        "action": "Launch Interceptor at Target"
-      }
-    ],
-    "controlTypes": [
-      "mouse",
-      "touch"
-    ],
-    "hot": false,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#08040d\"/>\n    <line x1=\"60\" y1=\"0\" x2=\"130\" y2=\"160\" stroke=\"#ff1744\" stroke-width=\"1.5\" stroke-dasharray=\"3,2\"/>\n    <line x1=\"200\" y1=\"0\" x2=\"240\" y2=\"140\" stroke=\"#ff1744\" stroke-width=\"1.5\" stroke-dasharray=\"3,2\"/>\n    <circle cx=\"240\" cy=\"140\" r=\"26\" fill=\"#00e5ff\" opacity=\"0.5\"/>\n    <circle cx=\"240\" cy=\"140\" r=\"12\" fill=\"#ffffff\"/>\n    <line x1=\"200\" y1=\"205\" x2=\"240\" y2=\"140\" stroke=\"#00e5ff\" stroke-width=\"2\"/>\n    <g fill=\"#1c2833\" transform=\"translate(0, 190)\"><rect x=\"80\" y=\"5\" width=\"25\" height=\"25\"/><rect x=\"110\" width=\"30\" height=\"30\"/><rect x=\"260\" width=\"35\" height=\"30\"/></g>\n    <polygon points=\"0,240 0,210 40,205 400,205 400,240\" fill=\"#26150b\"/>\n  </svg>"
+    hot: true
   },
   {
-    "id": "solitaire",
-    "title": "Klondike Solitaire",
-    "cat": "cards",
-    "color": "#00c853",
-    "tags": [
-      "Card Game",
-      "Patience",
-      "Classic"
+    id: 'vex4',
+    title: 'Vex 4',
+    cat: 'action',
+    color: '#ff1744',
+    tags: ['Stickman', 'Parkour', 'Hardcore', 'Platformer'],
+    thumbnail: 'games/vex4/vex4.png',
+    desc: 'The fourth chapter in the legendary stickman parkour series. Wall jump, slide under spinning buzzsaws, swim through pools, and conquer 10 brutal Acts.',
+    instructions: 'Sprint, jump, wall-slide, and kick off walls. Avoid red spikes, spinning blades, and laser traps to reach each portal flag.',
+    controls: [
+      { key: 'Arrow Keys / WASD', action: 'Run, Jump & Slide' }
     ],
-    "desc": "The gold standard of card solitaire. Drag or tap cards to build alternating tableau columns and assemble Ace-to-King foundations.",
-    "instructions": "Build down tableau columns in alternating colors. Transfer Aces to foundation piles and build up by suit to King.",
-    "controls": [
-      {
-        "key": "Click / Tap Card",
-        "action": "Auto-Move or Select"
-      }
-    ],
-    "controlTypes": [
-      "mouse",
-      "touch"
-    ],
-    "hot": false,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#0d381e\"/>\n    <rect x=\"335\" y=\"20\" width=\"36\" height=\"50\" rx=\"4\" fill=\"#ffffff\" stroke=\"#e0e0e0\" stroke-width=\"1\"/>\n    <text x=\"343\" y=\"36\" fill=\"#d50000\" font-family=\"sans-serif\" font-size=\"12\" font-weight=\"bold\">A</text>\n    <rect x=\"30\" y=\"20\" width=\"36\" height=\"50\" rx=\"4\" fill=\"#1565c0\" stroke=\"#fff\" stroke-width=\"1.5\"/>\n    <rect x=\"110\" y=\"90\" width=\"40\" height=\"56\" rx=\"4\" fill=\"#ffffff\" stroke=\"#ccc\" stroke-width=\"1\"/>\n    <text x=\"118\" y=\"108\" fill=\"#000\" font-family=\"sans-serif\" font-size=\"13\" font-weight=\"bold\">K</text>\n  </svg>"
+    hot: true
   },
   {
-    "id": "hex-puzzle",
-    "title": "Hex Block Puzzle",
-    "cat": "puzzle",
-    "color": "#ffd600",
-    "tags": [
-      "Blocks",
-      "Grid",
-      "Zen Puzzle"
+    id: 'vex5',
+    title: 'Vex 5',
+    cat: 'action',
+    color: '#ff5252',
+    tags: ['Stickman', 'Parkour', 'Challenges', 'Traps'],
+    thumbnail: 'games/vex5/vex.jpeg',
+    desc: 'Scale deadly obstacle courses in Vex 5. Conquer razor-sharp buzzsaws, rocket accelerators, crumbling platforms, and the brutal Challenge Room.',
+    instructions: 'Master precision wall climbs, low slides, and mid-air directional shifts to beat par times on every Act.',
+    controls: [
+      { key: 'Arrow Keys / WASD', action: 'Run, Jump, Duck & Wall Jump' }
+    ]
+  },
+  {
+    id: 'vex6',
+    title: 'Vex 6',
+    cat: 'action',
+    color: '#ff3d00',
+    tags: ['Stickman', 'Parkour', 'Skins', 'Daily Quests'],
+    thumbnail: 'assets/icons/vex-8.webp',
+    desc: 'Vex 6 introduces 9 brand new Acts, unlockable character skins, bonus stages, and daily challenges for dedicated parkour speedrunners.',
+    instructions: 'Dash through sprawling courses, dodge laser beams, collect gold coins, and unlock cosmetic stickman outfits.',
+    controls: [
+      { key: 'WASD / Arrow Keys', action: 'Run, Jump, Slide & Wall Climb' }
+    ]
+  },
+  {
+    id: 'vex7',
+    title: 'Vex 7',
+    cat: 'action',
+    color: '#ff6e40',
+    tags: ['Stickman', 'Grapple', 'Latest', 'Tower Defense'],
+    thumbnail: 'assets/icons/vex-8.webp',
+    desc: 'The latest Vex epic featuring grappling hook swings, high-altitude parachutes, and special tower defense mini-game modes.',
+    instructions: 'Fire grappling anchors onto hanging rings, glide gently with parachutes, and outsmart high-tech security grids.',
+    controls: [
+      { key: 'Arrow Keys / WASD', action: 'Move, Jump & Grapple' },
+      { key: 'Space', action: 'Deploy Parachute / Interact' }
+    ]
+  },
+  {
+    id: 'ovo',
+    title: 'OvO',
+    cat: 'skill',
+    color: '#fafafa',
+    tags: ['Speedrun', 'Parkour', 'Fluid Physics', 'Precision'],
+    thumbnail: 'games/ovo/ovo.png',
+    desc: 'Silky-smooth, ultra-responsive stickman parkour speedrunner. Chain together slides, dive kicks, wall kicks, and ground pounds.',
+    instructions: 'Build momentum by slide-jumping. Combine down arrow while airborne to perform ground pounds and bounce higher.',
+    controls: [
+      { key: '← → / A D', action: 'Move Left & Right' },
+      { key: '↑ / W', action: 'Jump' },
+      { key: '↓ / S', action: 'Slide / Ground Pound' }
     ],
-    "desc": "Fit vibrant polyomino and geometric blocks into the grid. Clear complete rows and columns in massive cascading combos.",
-    "instructions": "Select a block from the tray and place it onto the grid. Fill complete horizontal or vertical lines to vaporize them and clear room.",
-    "controls": [
-      {
-        "key": "Click Piece then Grid",
-        "action": "Place Piece"
-      }
+    hot: true
+  },
+  {
+    id: 'paperio2',
+    title: 'Paper.io 2',
+    cat: 'action',
+    color: '#ff4081',
+    tags: ['Territory', 'Multiplayer Arena', 'IO', 'Conquest'],
+    thumbnail: 'assets/icons/paper.webp',
+    desc: 'Expand your colored territory by painting loops on the arena floor. Cut off opponents trails before they return to their base to eliminate them.',
+    instructions: 'Steer your paper square into open field to draw a tail. Close the loop back on your territory to claim the captured space.',
+    controls: [
+      { key: 'Mouse Move / Arrow Keys', action: 'Steer Direction' }
     ],
-    "controlTypes": [
-      "mouse",
-      "touch"
+    hot: true
+  },
+  {
+    id: 'superhot',
+    title: 'SUPERHOT',
+    cat: 'action',
+    color: '#ff3d00',
+    tags: ['Time Control', 'Tactical FPS', 'Slow Motion', '3D'],
+    thumbnail: 'games/superhot/hot.jpg',
+    desc: 'Time moves only when you move. The acclaimed tactical FPS where you calculate every step, dodge slow-motion bullets, and shatter crystal foes.',
+    instructions: 'Stand still to freeze incoming bullets in mid-air. Plan your shots, pick up dropped firearms, and take down waves of red enemies.',
+    controls: [
+      { key: 'WASD', action: 'Move (Advances Time)' },
+      { key: 'Mouse Aim', action: 'Aim Weapon' },
+      { key: 'Left Click', action: 'Fire Gun / Punch' },
+      { key: 'Right Click', action: 'Throw Object' }
     ],
-    "hot": false,
-    "svg": "<svg viewBox=\"0 0 400 240\" width=\"100%\" height=\"100%\" xmlns=\"http://www.w3.org/2000/svg\">\n    <rect width=\"400\" height=\"240\" fill=\"#0a0f1d\"/>\n    <rect x=\"110\" y=\"20\" width=\"180\" height=\"180\" rx=\"8\" fill=\"#141b2d\" stroke=\"#263353\" stroke-width=\"2\"/>\n    <rect x=\"120\" y=\"40\" width=\"16\" height=\"16\" rx=\"3\" fill=\"#ff1744\"/>\n    <rect x=\"138\" y=\"40\" width=\"16\" height=\"16\" rx=\"3\" fill=\"#ff1744\"/>\n    <rect x=\"156\" y=\"40\" width=\"16\" height=\"16\" rx=\"3\" fill=\"#ff1744\"/>\n    <rect x=\"174\" y=\"40\" width=\"16\" height=\"16\" rx=\"3\" fill=\"#00e5ff\"/>\n    <rect x=\"192\" y=\"40\" width=\"16\" height=\"16\" rx=\"3\" fill=\"#00e5ff\"/>\n    <rect x=\"210\" y=\"40\" width=\"16\" height=\"16\" rx=\"3\" fill=\"#00e5ff\"/>\n    <g transform=\"translate(170, 205)\"><rect width=\"14\" height=\"14\" rx=\"3\" fill=\"#d500f9\"/><rect x=\"16\" width=\"14\" height=\"14\" rx=\"3\" fill=\"#d500f9\"/><rect x=\"32\" width=\"14\" height=\"14\" rx=\"3\" fill=\"#d500f9\"/><rect x=\"48\" width=\"14\" height=\"14\" rx=\"3\" fill=\"#d500f9\"/></g>\n  </svg>"
+    hot: true
+  },
+  {
+    id: 'baldis-basics',
+    title: "Baldi's Basics",
+    cat: 'puzzle',
+    color: '#76ff03',
+    tags: ['Horror', '90s Edutainment', 'Notebooks', 'Escape'],
+    thumbnail: 'games/baldis-basics/splash.png',
+    desc: 'Collect 7 math notebooks inside the strange schoolhouse while outrunning Baldi, the Principal, Playtime, and Gotta Sweep in this cult indie title.',
+    instructions: 'Solve the notebook equations. Beware the impossible third question! Manage stamina, open doors, and find an exit before Baldi catches you.',
+    controls: [
+      { key: 'WASD', action: 'Walk' },
+      { key: 'Mouse', action: 'Look / Interact' },
+      { key: 'Shift', action: 'Sprint' },
+      { key: 'Space', action: 'Look Behind' }
+    ]
+  },
+  {
+    id: 'geodash',
+    title: 'Geometry Dash',
+    cat: 'skill',
+    color: '#00e676',
+    tags: ['Rhythm', 'EDM Beats', 'Spikes', 'Music'],
+    thumbnail: 'games/geodash/geoscratchicon.png',
+    desc: 'Jump, fly, and flip through rhythm-synchronized spike corridors and gravity-reversal portals set to pumping electronic soundtracks.',
+    instructions: 'Time your jumps precisely to the musical beat to clear triangular spikes and bounce on jump rings.',
+    controls: [
+      { key: 'Spacebar / Left Click / ↑', action: 'Jump & Rocket Fly' }
+    ],
+    hot: true
+  },
+  {
+    id: 'ctr',
+    title: 'Cut the Rope',
+    cat: 'puzzle',
+    color: '#76ff03',
+    tags: ['Om Nom', 'Candy', 'Physics', 'Stars'],
+    thumbnail: 'games/ctr/logo.png',
+    desc: 'Feed tasty sweet candies to adorable green monster Om Nom. Slice ropes, burst air cushions, float bubbles, and capture 3 stars per stage.',
+    instructions: 'Click and drag to cut swinging ropes. Use gravity and momentum to direct the candy into Om Nom’s waiting mouth.',
+    controls: [
+      { key: 'Mouse Drag / Swipe', action: 'Slice Ropes & Pop Bubbles' }
+    ],
+    hot: true
+  },
+  {
+    id: 'worlds-hardest-game',
+    title: "World's Hardest Game",
+    cat: 'skill',
+    color: '#2979ff',
+    tags: ['Hardcore', 'Reflex', 'Mazes', 'Classic Flash'],
+    thumbnail: 'assets/icons/hardgame1.webp',
+    desc: 'The definitive test of patience and reflex. Steer your red square through mazes of patrolling blue spheres, collect yellow coins, and hit green goals.',
+    instructions: 'Navigate your red block between relentless patterns of bouncing blue balls. Touch any blue orb and you restart the level.',
+    controls: [
+      { key: 'Arrow Keys', action: 'Move Red Square' }
+    ]
+  },
+  {
+    id: 'doodle-jump',
+    title: 'Doodle Jump',
+    cat: 'arcade',
+    color: '#aeea00',
+    tags: ['Vertical Jump', 'Springs', 'Monsters', 'Classic'],
+    thumbnail: 'games/doodle-jump/doodle.png',
+    desc: 'Guide the iconic four-legged Doodler up an endless sheet of graph paper. Hop on trampolines, grab jetpack boosts, and blast monsters.',
+    instructions: 'Bounce upwards continuously. Steer onto stationary, moving, and breaking platforms without tumbling down the void.',
+    controls: [
+      { key: '← → / A D', action: 'Steer Left & Right' },
+      { key: '↑ / W / Click', action: 'Shoot Nose Pellets' }
+    ]
+  },
+  {
+    id: 'cluster-rush',
+    title: 'Cluster Rush',
+    cat: 'action',
+    color: '#ff9100',
+    tags: ['First Person', 'Semi-Trucks', 'Acrobatic', 'Fast Paced'],
+    thumbnail: 'games/cluster-rush/splash.png',
+    desc: 'Adrenaline-fueled first-person acrobatics jumping across runaway semi-trucks crashing, swerving, and exploding toward the finish line.',
+    instructions: 'Sprint and leap from truck roof to truck roof. Don’t fall onto the highway road!',
+    controls: [
+      { key: 'WASD / Arrows', action: 'Move Direction' },
+      { key: 'Spacebar', action: 'Jump & Climb Ledges' }
+    ]
+  },
+  {
+    id: 'flappy-bird',
+    title: 'Flappy Bird',
+    cat: 'arcade',
+    color: '#ffd600',
+    tags: ['Original', 'One Button', 'Pipes', 'Addictive'],
+    thumbnail: 'assets/icons/flappycircle.webp',
+    desc: 'The original viral mobile phenomenon faithfully rebuilt for browsers. Tap wings to fly through narrow green pipe gaps for high score glory.',
+    instructions: 'Tap to give the little bird a flap of lift. Gravity pulls you down constantly; time flaps to thread the pipe gaps.',
+    controls: [
+      { key: 'Spacebar / Left Click', action: 'Flap Wings' }
+    ],
+    hot: true
+  },
+  {
+    id: 'jetpack-joyride',
+    title: 'Jetpack Joyride',
+    cat: 'arcade',
+    color: '#00e5ff',
+    tags: ['Halfbrick', 'Barry Steakfries', 'Coins', 'Vehicles'],
+    thumbnail: 'games/jetpack-joyride/splash.jpg',
+    desc: 'Strap on a bullet-powered machine gun jetpack as Barry Steakfries. Dodge electric zappers, laser beams, missiles, and pilot stomper mechs.',
+    instructions: 'Hold space or click to fire jetpack propulsion and gain height; release to descend. Collect gold coins to upgrade gadgets.',
+    controls: [
+      { key: 'Spacebar / Left Click / ↑', action: 'Fire Jetpack Thrusters' }
+    ],
+    hot: true
+  },
+  {
+    id: '2048',
+    title: '2048',
+    cat: 'puzzle',
+    color: '#edc22e',
+    tags: ['Numbers', 'Math', 'Brain', 'Merge'],
+    thumbnail: 'games/2048/2048.png',
+    desc: 'Gabriele Cirulli world-famous mathematical sliding puzzle. Slide matching numbered tiles together to merge values and create the elusive 2048 tile.',
+    instructions: 'Shift all tiles in one of four directions. When two tiles with the same number touch, they merge into one with double value.',
+    controls: [
+      { key: 'Arrow Keys / WASD', action: 'Slide Grid Tiles' }
+    ],
+    hot: true
+  },
+  {
+    id: 'bitlife',
+    title: 'BitLife',
+    cat: 'puzzle',
+    color: '#e040fb',
+    tags: ['Life Sim', 'Choices', 'Humor', 'Career'],
+    thumbnail: 'games/bitlife/splash.png',
+    desc: 'Text-based life simulator where every decision counts. Will you become a decorated surgeon, criminal boss, celebrity, or eccentric billionaire?',
+    instructions: 'Make choices for school, relationships, health, and career each year of life. Watch your life stats update in real time.',
+    controls: [
+      { key: 'Mouse Click', action: 'Select Choices & Age Up' }
+    ]
+  },
+  {
+    id: 'hextris',
+    title: 'Hextris',
+    cat: 'puzzle',
+    color: '#00e676',
+    tags: ['Hexagon', 'Tetris', 'Color Match', 'Fast'],
+    thumbnail: 'assets/icons/tetris.webp',
+    desc: 'Fast-paced hexagonal puzzle game inspired by Tetris. Rotate the central hexagon to catch falling colored bars and clear matching color lines.',
+    instructions: 'Rotate the central hexagon so falling bars connect with identical colors. Three of the same color touching will vanish and award points.',
+    controls: [
+      { key: '← → / A D', action: 'Rotate Hexagon Left & Right' }
+    ]
+  },
+  {
+    id: 'bobtherobber2',
+    title: 'Bob The Robber 2',
+    cat: 'puzzle',
+    color: '#ffd600',
+    tags: ['Stealth', 'Thief', 'Puzzles', 'Cameras'],
+    thumbnail: 'games/bobtherobber2/splash.jpeg',
+    desc: 'Sneak through corporate offices and luxury estates as master thief Bob. Hide in darkness, pick complex locks, bypass lasers, and save the town.',
+    instructions: 'Move silently through hallways. Hide in shaded doorways when guards or cameras look your way. Pick safe locks and escape with the loot.',
+    controls: [
+      { key: 'Arrow Keys / WASD', action: 'Move, Climb Stairs & Search' },
+      { key: 'Spacebar', action: 'Knock Out Guards / Hit Switch' }
+    ]
+  },
+  {
+    id: 'stickman-hook',
+    title: 'Stickman Hook',
+    cat: 'skill',
+    color: '#2979ff',
+    tags: ['Madbox', 'Grapple', 'Swinging', 'Physics'],
+    thumbnail: 'games/stickman-hook/unnamed.jpg',
+    desc: 'Grapple and swing like an acrobat through colorful stages. Master physics momentum, bounce on trampolines, and soar across the finish line.',
+    instructions: 'Click and hold to attach your grapple line to the nearest ring. Release to catapult forward with swinging momentum.',
+    controls: [
+      { key: 'Spacebar / Left Click', action: 'Hold to Grapple, Release to Fly' }
+    ],
+    hot: true
+  },
+  {
+    id: 'learntofly2',
+    title: 'Learn to Fly 2',
+    cat: 'arcade',
+    color: '#00b0ff',
+    tags: ['Penguin', 'Gliders', 'Rockets', 'Upgrades'],
+    thumbnail: 'games/learntofly2/learn-to-fly-2.jpg',
+    desc: 'Help our determined penguin friend conquer the skies and smash through distant icebergs with gliders, rocket engines, and aerodynamic hulls.',
+    instructions: 'Launch down the ramp, adjust your flight pitch angle for maximum lift, and fire fuel rockets to cross immense arctic distances.',
+    controls: [
+      { key: '← → / A D', action: 'Adjust Flight Pitch' },
+      { key: 'Spacebar', action: 'Fire Boosters' }
+    ]
+  },
+  {
+    id: 'breakingthebank',
+    title: 'Breaking the Bank',
+    cat: 'puzzle',
+    color: '#ffc107',
+    tags: ['Henry Stickmin', 'Puffballs', 'Humor', 'Branching'],
+    thumbnail: 'games/breakingthebank/breakingthebank.png',
+    desc: 'The uproarious opening chapter of the Henry Stickmin series. Try to break into a heavily guarded bank vault using comical gadget choices.',
+    instructions: 'Pick from absurd options like a teleporter, laser drill, wrecking ball, or disguise bag, and watch hilarious cartoon animations unfold.',
+    controls: [
+      { key: 'Mouse Click', action: 'Choose Gadgets & Pathways' }
+    ]
+  },
+  {
+    id: 'escapingtheprison',
+    title: 'Escaping the Prison',
+    cat: 'puzzle',
+    color: '#ff9800',
+    tags: ['Henry Stickmin', 'Puffballs', 'Jailbreak', 'Multiple Endings'],
+    thumbnail: 'games/escapingtheprison/escapingtheprison.jpg',
+    desc: 'Henry Stickmin is behind bars! Choose from a nail file, energy drink, teleporter, or rocket launcher to stage an outrageous multi-ending escape.',
+    instructions: 'Make quick decisions as guards patrol. Discover all 3 unique escape endings and dozens of comical failure animations.',
+    controls: [
+      { key: 'Mouse Click', action: 'Select Escape Options' }
+    ]
+  },
+  {
+    id: 'tiny-fishing',
+    title: 'Tiny Fishing',
+    cat: 'arcade',
+    color: '#00e5ff',
+    tags: ['Fishing', 'Deep Sea', 'Upgrades', 'Aquarium'],
+    thumbnail: 'games/tiny-fishing/tiny-fishing.png',
+    desc: 'Cast your line into deep waters, swipe to hook colorful exotic fish, and earn cash to upgrade line depth, max catch, and offline earnings.',
+    instructions: 'Cast your fishing hook into the water. As the line ascends, drag your mouse to hook as many high-value fish as your line can hold.',
+    controls: [
+      { key: 'Mouse Click & Drag', action: 'Cast Hook & Reel Fish' }
+    ]
   }
 ];
-
-if (typeof module !== 'undefined' && module.exports) { module.exports = { CATEGORIES, GAMES }; }
