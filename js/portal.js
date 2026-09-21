@@ -278,6 +278,8 @@ function renderFeaturedGame() {
 
   const launch = () => openGame(featured.id);
   if (stage) stage.onclick = launch;
+  const bigBtn = document.getElementById('featBigPlay');
+  if (bigBtn) bigBtn.onclick = (e) => { e.stopPropagation(); launch(); };
   if (playLink) playLink.onclick = (e) => { e.preventDefault(); launch(); };
 }
 
@@ -497,7 +499,13 @@ function openGame(id) {
   if (!game) return;
 
   activeGameId = id;
-  if (window.RaptorSound) window.RaptorSound.playSuccess();
+  
+  // Safe sound trigger
+  try {
+    if (window.RaptorSound && typeof window.RaptorSound.playSuccess === 'function') {
+      window.RaptorSound.playSuccess();
+    }
+  } catch (e) {}
 
   const modal = document.getElementById('playerModal');
   const iframe = document.getElementById('gameIframe');
@@ -550,7 +558,9 @@ function openGame(id) {
   document.body.style.overflow = 'hidden';
 
   // Update URL query string (?game=id)
-  window.history.replaceState({ game: id }, '', `?game=${id}`);
+  try {
+    window.history.replaceState({ game: id }, '', `?game=${id}`);
+  } catch (e) {}
 }
 
 function closePlayer() {

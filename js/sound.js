@@ -30,6 +30,22 @@ class SoundEngine {
     return this.muted;
   }
 
+  get enabled() {
+    return !this.muted;
+  }
+
+  set enabled(val) {
+    this.setMuted(!val);
+  }
+
+  playSuccess() {
+    this.playVictory();
+  }
+
+  playStart() {
+    this.playPowerup();
+  }
+
   toggleMute() {
     return this.setMuted(!this.muted);
   }
