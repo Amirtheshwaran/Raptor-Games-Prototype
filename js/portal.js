@@ -1,22 +1,26 @@
 /**
- * Raptor Games — Portal Controller
+ * Raptor Games — Classic Portal Controller
  * Instant-play browser arcade architecture with audio synthesis and local persistence.
  */
 
-const CATEGORIES = {
-  all: { name: 'All Games', icon: '🌐' },
-  driving: { name: 'Driving & Stunts', icon: '🏎️' },
-  action: { name: 'Action & Duels', icon: '⚡' },
-  sports: { name: 'Sports & 2P', icon: '🏀' },
-  puzzle: { name: 'Puzzle & Logic', icon: '🧩' },
-  arcade: { name: 'Arcade Classics', icon: '🕹️' },
-  skill: { name: 'Skill & Speed', icon: '🎯' }
-};
+// State
+let currentTab = 'home'; // 'home', 'all', or category key
+let activeSearchQuery = '';
+let activeFilterMode = null; // null, 'favorites'
+let activeGameId = null;
+let soundEnabled = true;
 
-let activeCategory = 'all';
-let searchQuery = '';
-let activeFilter = null; // null, 'favorites', 'recent'
-let currentGameId = null;
+// Tab Icon Mapping for Classic Web 2.0 Navigation
+const TAB_ICONS = {
+  home: '🏠',
+  all: '🌐',
+  driving: '🏎️',
+  action: '⚡',
+  sports: '🏀',
+  puzzle: '🧩',
+  arcade: '🕹️',
+  skill: '🎯'
+};
 
 // Favorites & Recents in localStorage
 function getFavorites() {
@@ -42,23 +46,16 @@ function toggleFavorite(id, e) {
   }
   localStorage.setItem('raptor_favorites', JSON.stringify(favs));
   updateFavoritesCounter();
-  renderGrid();
-  updatePlayerFavButton();
-}
-
-function getRecentGames() {
-  try {
-    return JSON.parse(localStorage.getItem('raptor_recent') || '[]');
-  } catch (e) {
-    return [];
+  
+  if (activeFilterMode === 'favorites') {
+    renderDirectory();
   }
+  updatePlayerFavBtn();
 }
 
-function recordRecentGame(id) {
-  let recents = getRecentGames().filter(x => x !== id);
-  recents.unshift(id);
-  if (recents.length > 16) recents.pop();
-  localStorage.setItem('raptor_recent', JSON.stringify(recents));
+function updateFavoritesCounter() {
+  const badge = document.getElementById('favCountBadge');
+  if (badge) badge.textContent = getFavorites().length;
 }
 
 function getHighScore(id) {
@@ -67,85 +64,149 @@ function getHighScore(id) {
 
 // Global Callback for Game iframes
 window.onHighScoreUpdate = function(id, score) {
-  const hsEl = document.getElementById('player-hs-val');
-  if (hsEl && currentGameId === id) {
+  const hsEl = document.getElementById('playerHsVal');
+  if (hsEl && activeGameId === id) {
     hsEl.textContent = score;
   }
-  renderGrid();
 };
 
 // INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
-  initNav();
+  initNavigation();
   initSearch();
-  initControls();
-  renderFeatured();
-  renderGrid();
+  renderFeaturedGame();
+  renderHotGames();
+  renderTop10Games();
+  renderCategoryBoxes();
+  renderDirectory();
   updateFavoritesCounter();
 
-  // Handle URL deep link (e.g. ?game=motox3m)
+  // Check URL params (e.g. ?game=motox3m)
   const params = new URLSearchParams(window.location.search);
-  const targetGame = params.get('game');
-  if (targetGame && GAMES.find(g => g.id === targetGame)) {
-    openGame(targetGame);
+  const target = params.get('game');
+  if (target && GAMES.find(g => g.id === target)) {
+    openGame(target);
   }
 });
 
-// NAVIGATION & CATEGORIES
-function initNav() {
-  const container = document.getElementById('navContainer');
-  if (!container) return;
+// NAVIGATION TABS
+function initNavigation() {
+  const strip = document.getElementById('navStrip');
+  if (!strip) return;
 
-  container.innerHTML = '';
-  Object.entries(CATEGORIES).forEach(([key, cat]) => {
-    const btn = document.createElement('button');
-    btn.className = 'cat-pill' + (key === activeCategory && !activeFilter ? ' active' : '');
-    btn.dataset.cat = key;
-    
-    let count = key === 'all' ? GAMES.length : GAMES.filter(g => g.cat === key).length;
-    btn.innerHTML = `
-      <span class="cat-pill-icon">${cat.icon}</span>
-      <span>${cat.name}</span>
-      <span class="cat-pill-count">${count}</span>
-    `;
-    
-    btn.onclick = () => {
-      if (window.RaptorSound) window.RaptorSound.playBlip(480);
-      setCategory(key);
-    };
-    container.appendChild(btn);
-  });
+  const tabs = [
+    { key: 'home', label: 'Home' },
+    { key: 'driving', label: 'Driving' },
+    { key: 'action', label: 'Action' },
+    { key: 'sports', label: 'Sports & 2P' },
+    { key: 'puzzle', label: 'Puzzle' },
+    { key: 'arcade', label: 'Arcade' },
+    { key: 'skill', label: 'Skill & Speed' },
+    { key: 'all', label: `All Games (${GAMES.length})` }
+  ];
+
+  strip.innerHTML = tabs.map(t => `
+    <button class="nav-tab ${t.key === currentTab ? 'active' : ''}" data-tab="${t.key}" onclick="handleTabClick('${t.key}')">
+      <span class="tab-icon">${TAB_ICONS[t.key] || '🎮'}</span>
+      <span>${t.label}</span>
+    </button>
+  `).join('');
 }
 
-function setCategory(catKey) {
-  activeCategory = catKey;
-  activeFilter = null;
-  document.querySelectorAll('.cat-pill').forEach(b => {
-    b.classList.toggle('active', b.dataset.cat === catKey);
-  });
-  document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
-  renderGrid();
-}
+function handleTabClick(key) {
+  currentTab = key;
+  activeFilterMode = null;
+  activeSearchQuery = '';
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
+  const clearBtn = document.getElementById('searchClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
 
-function setFilter(filterType) {
-  if (activeFilter === filterType) {
-    activeFilter = null;
-    document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`.cat-pill[data-cat="${activeCategory}"]`)?.classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === key);
+  });
+
+  if (window.RaptorSound) window.RaptorSound.playBlip(480);
+
+  if (key === 'home') {
+    showHomepage();
+  } else if (key === 'all') {
+    showAllGames();
   } else {
-    activeFilter = filterType;
-    document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.action-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.filter === filterType);
-    });
+    filterByNav(key);
   }
-  if (window.RaptorSound) window.RaptorSound.playBlip(540);
-  renderGrid();
 }
 
-function updateFavoritesCounter() {
-  const el = document.getElementById('fav-count');
-  if (el) el.textContent = getFavorites().length;
+// VIEW SWITCHING
+function showHomepage() {
+  currentTab = 'home';
+  activeFilterMode = null;
+  activeSearchQuery = '';
+  document.getElementById('mcHomepageView').style.display = 'block';
+  document.getElementById('mcDirectoryView').classList.remove('active');
+  
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === 'home');
+  });
+}
+
+function showAllGames() {
+  currentTab = 'all';
+  activeFilterMode = null;
+  document.getElementById('mcHomepageView').style.display = 'none';
+  document.getElementById('mcDirectoryView').classList.add('active');
+
+  const titleEl = document.getElementById('dirHeaderTitle');
+  const countEl = document.getElementById('dirHeaderCount');
+  if (titleEl) titleEl.textContent = 'All Playable Games';
+  if (countEl) countEl.textContent = `${GAMES.length} Games Available`;
+
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === 'all');
+  });
+
+  renderDirectory();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function filterByNav(catKey) {
+  currentTab = catKey;
+  activeFilterMode = null;
+  document.getElementById('mcHomepageView').style.display = 'none';
+  document.getElementById('mcDirectoryView').classList.add('active');
+
+  const catObj = CATEGORIES[catKey];
+  const catName = catObj ? catObj.name : 'Games';
+  const matching = GAMES.filter(g => g.cat === catKey);
+
+  const titleEl = document.getElementById('dirHeaderTitle');
+  const countEl = document.getElementById('dirHeaderCount');
+  if (titleEl) titleEl.textContent = `${catName}`;
+  if (countEl) countEl.textContent = `${matching.length} Games`;
+
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === catKey);
+  });
+
+  renderDirectory();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleFavoritesView() {
+  activeFilterMode = 'favorites';
+  currentTab = '';
+  document.getElementById('mcHomepageView').style.display = 'none';
+  document.getElementById('mcDirectoryView').classList.add('active');
+
+  const favs = getFavorites();
+  const titleEl = document.getElementById('dirHeaderTitle');
+  const countEl = document.getElementById('dirHeaderCount');
+  if (titleEl) titleEl.textContent = 'Your Saved Favorites';
+  if (countEl) countEl.textContent = `${favs.length} Games Saved`;
+
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  renderDirectory();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // SEARCH
@@ -155,298 +216,341 @@ function initSearch() {
   if (!input) return;
 
   input.addEventListener('input', e => {
-    searchQuery = e.target.value.trim().toLowerCase();
+    activeSearchQuery = e.target.value.trim().toLowerCase();
     if (clearBtn) {
-      clearBtn.style.display = searchQuery ? 'flex' : 'none';
+      clearBtn.style.display = activeSearchQuery ? 'block' : 'none';
     }
-    renderGrid();
+
+    if (activeSearchQuery) {
+      document.getElementById('mcHomepageView').style.display = 'none';
+      document.getElementById('mcDirectoryView').classList.add('active');
+      
+      const titleEl = document.getElementById('dirHeaderTitle');
+      if (titleEl) titleEl.textContent = `Search Results: "${activeSearchQuery}"`;
+      renderDirectory();
+    } else {
+      if (currentTab === 'home') {
+        showHomepage();
+      } else {
+        renderDirectory();
+      }
+    }
   });
 
-  // Shortcut key /
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      clearBtn.style.display = 'none';
+      activeSearchQuery = '';
+      if (currentTab === 'home') {
+        showHomepage();
+      } else {
+        renderDirectory();
+      }
+    });
+  }
+
+  // Quick keyboard shortcut '/'
   window.addEventListener('keydown', e => {
-    if (e.key === '/' && document.activeElement !== input) {
+    if (e.key === '/' && document.activeElement !== input && !activeGameId) {
       e.preventDefault();
       input.focus();
     }
   });
 }
 
-function clearSearch() {
-  const input = document.getElementById('searchInput');
-  const clearBtn = document.getElementById('searchClearBtn');
-  if (input) {
-    input.value = '';
-    searchQuery = '';
-    input.focus();
-  }
-  if (clearBtn) clearBtn.style.display = 'none';
-  renderGrid();
-}
-
-// CONTROLS & SOUND TOGGLE
-function initControls() {
-  const soundBtn = document.getElementById('soundToggleBtn');
-  if (soundBtn) {
-    const updateIcon = () => {
-      const muted = window.RaptorSound ? window.RaptorSound.isMuted() : false;
-      soundBtn.innerHTML = muted 
-        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg><span>Sound Off</span>`
-        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg><span>Sound On</span>`;
-    };
-    updateIcon();
-    soundBtn.onclick = () => {
-      if (window.RaptorSound) {
-        window.RaptorSound.toggleMute();
-        updateIcon();
-      }
-    };
-  }
-}
-
-// FEATURED HERO SHOWCASE
-function renderFeatured() {
+// TOP SECTION 1: LATEST / FEATURED GAME
+function renderFeaturedGame() {
   const featured = GAMES.find(g => g.id === 'motox3m') || GAMES[0];
-  const side1 = GAMES.find(g => g.id === 'slope') || GAMES[1];
-  const side2 = GAMES.find(g => g.id === 'fireboywatergirlforesttemple') || GAMES[2];
+  if (!featured) return;
 
-  const featCard = document.getElementById('heroCard');
-  if (featCard && featured) {
-    featCard.onclick = () => openGame(featured.id);
-    document.getElementById('featTitle').textContent = featured.title;
-    document.getElementById('featDesc').textContent = featured.desc;
-    document.getElementById('featCat').textContent = CATEGORIES[featured.cat]?.name || 'Featured';
-    document.getElementById('featArt').innerHTML = `
-      <img src="${featured.thumbnail}" alt="${featured.title}" class="hero-art-img" onerror="this.src='assets/icons/slope.webp'">
-    `;
-  }
+  const stage = document.getElementById('featStage');
+  const img = document.getElementById('featImg');
+  const title = document.getElementById('featTitle');
+  const desc = document.getElementById('featDesc');
+  const catName = document.getElementById('featCatName');
+  const playLink = document.getElementById('featPlayLink');
 
-  const s1 = document.getElementById('sideHighlight1');
-  if (s1 && side1) {
-    s1.onclick = () => openGame(side1.id);
-    s1.querySelector('.highlight-title').textContent = side1.title;
-    s1.querySelector('.highlight-sub').textContent = side1.tags.slice(0, 3).join(' • ');
-    s1.querySelector('.highlight-thumb').innerHTML = `
-      <img src="${side1.thumbnail}" alt="${side1.title}" class="highlight-img" onerror="this.src='assets/icons/slope.webp'">
-    `;
-  }
+  if (img) img.src = featured.thumbnail;
+  if (title) title.textContent = featured.title;
+  if (desc) desc.textContent = featured.desc;
+  if (catName) catName.textContent = CATEGORIES[featured.cat]?.name || 'Featured';
 
-  const s2 = document.getElementById('sideHighlight2');
-  if (s2 && side2) {
-    s2.onclick = () => openGame(side2.id);
-    s2.querySelector('.highlight-title').textContent = side2.title;
-    s2.querySelector('.highlight-sub').textContent = side2.tags.slice(0, 3).join(' • ');
-    s2.querySelector('.highlight-thumb').innerHTML = `
-      <img src="${side2.thumbnail}" alt="${side2.title}" class="highlight-img" onerror="this.src='assets/icons/slope.webp'">
-    `;
+  const launch = () => openGame(featured.id);
+  if (stage) stage.onclick = launch;
+  if (playLink) playLink.onclick = (e) => { e.preventDefault(); launch(); };
+}
+
+// TOP SECTION 2: HOT GAMES (2x3 GRID)
+function renderHotGames() {
+  const hotGrid = document.getElementById('hotGrid');
+  if (!hotGrid) return;
+
+  const hotList = [
+    'slope',
+    'retro-bowl',
+    'subway-surfers',
+    'fireboywatergirlforesttemple',
+    'cookie-clicker',
+    'drive-mad'
+  ].map(id => GAMES.find(g => g.id === id)).filter(Boolean);
+
+  hotGrid.innerHTML = hotList.map(g => `
+    <div class="mc-hot-item" onclick="openGame('${g.id}')">
+      <div class="mc-hot-thumb">
+        <img src="${g.thumbnail}" alt="${g.title}" loading="lazy" onerror="this.src='games/slope/slope4.jpeg'">
+      </div>
+      <span class="mc-hot-title">${g.title}</span>
+    </div>
+  `).join('');
+}
+
+// TOP SECTION 3: TOP 10 GAMES (RANKED LIST + LIVE PREVIEW)
+function renderTop10Games() {
+  const listEl = document.getElementById('top10List');
+  if (!listEl) return;
+
+  const top10Ids = [
+    'motox3m',
+    'slope',
+    'subway-surfers',
+    'retro-bowl',
+    'fireboywatergirlforesttemple',
+    'cookie-clicker',
+    'drive-mad',
+    'rooftop-snipers',
+    'vex6',
+    'ctr'
+  ];
+
+  const top10Games = top10Ids.map(id => GAMES.find(g => g.id === id)).filter(Boolean);
+
+  listEl.innerHTML = top10Games.map((g, idx) => `
+    <li class="mc-top10-item ${idx === 0 ? 'active' : ''}" 
+        onmouseenter="updateTop10Preview('${g.id}')" 
+        onclick="openGame('${g.id}')">
+      <span class="mc-top10-num">${idx + 1}.</span>
+      <span>${g.title}</span>
+    </li>
+  `).join('');
+
+  if (top10Games[0]) {
+    updateTop10Preview(top10Games[0].id);
   }
 }
 
-// GAME GRID RENDERING
-function renderGrid() {
-  const grid = document.getElementById('gamesGrid');
-  const countEl = document.getElementById('sectionCount');
-  const titleEl = document.getElementById('sectionTitle');
-  if (!grid) return;
+function updateTop10Preview(id) {
+  const game = GAMES.find(g => g.id === id);
+  if (!game) return;
 
-  let filtered = [...GAMES];
+  const img = document.getElementById('top10PrevImg');
+  const title = document.getElementById('top10PrevTitle');
+  const desc = document.getElementById('top10PrevDesc');
+  const box = document.getElementById('top10Preview');
 
-  // 1. Search Query Filter
-  if (searchQuery) {
-    filtered = filtered.filter(g => 
-      g.title.toLowerCase().includes(searchQuery) ||
-      g.desc.toLowerCase().includes(searchQuery) ||
-      g.tags.some(t => t.toLowerCase().includes(searchQuery))
-    );
-    if (titleEl) titleEl.textContent = `Search results for "${searchQuery}"`;
-    if (countEl) countEl.textContent = `${filtered.length} Games Found`;
-  } 
-  // 2. Favorites Filter
-  else if (activeFilter === 'favorites') {
-    const favs = getFavorites();
-    filtered = filtered.filter(g => favs.includes(g.id));
-    if (titleEl) titleEl.textContent = 'Your Favorite Games';
-    if (countEl) countEl.textContent = `${filtered.length} Saved Favorites`;
-  } 
-  // 3. Recently Played Filter
-  else if (activeFilter === 'recent') {
-    const recents = getRecentGames();
-    filtered = recents.map(id => GAMES.find(g => g.id === id)).filter(Boolean);
-    if (titleEl) titleEl.textContent = 'Recently Played Games';
-    if (countEl) countEl.textContent = `${filtered.length} Games Played`;
-  } 
-  // 4. Category Filter
-  else {
-    if (activeCategory !== 'all') {
-      filtered = filtered.filter(g => g.cat === activeCategory);
-      if (titleEl) titleEl.textContent = CATEGORIES[activeCategory]?.name || 'Games';
-    } else {
-      if (titleEl) titleEl.textContent = 'All Playable Games';
-    }
-    if (countEl) countEl.textContent = `${filtered.length} Games Available`;
-  }
+  if (img) img.src = game.thumbnail;
+  if (title) title.textContent = game.title;
+  if (desc) desc.textContent = game.desc;
+  if (box) box.onclick = () => openGame(game.id);
 
-  // Empty State
-  if (filtered.length === 0) {
-    grid.innerHTML = `
-      <div class="empty-state">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <h3>No games match your search</h3>
-        <p>Try searching for a different game title, genre tag, or clear your current filters.</p>
-        <button class="play-now-btn" onclick="resetFilters()">Browse All 42 Games</button>
-      </div>
-    `;
-    return;
-  }
+  document.querySelectorAll('.mc-top10-item').forEach(item => {
+    item.classList.toggle('active', item.textContent.includes(game.title));
+  });
+}
 
-  grid.innerHTML = filtered.map(game => {
-    const fav = isFavorite(game.id);
-    const hs = getHighScore(game.id);
-    const catName = CATEGORIES[game.cat]?.name || 'Arcade';
+// CATEGORIES GRID (6 BOXES - ICONIC HOMEPAGE LAYOUT)
+function renderCategoryBoxes() {
+  const container = document.getElementById('categoriesGrid');
+  if (!container) return;
 
-    let badgeHtml = '';
-    if (game.featured) {
-      badgeHtml = '<span class="card-badge-top badge-featured">★ TOP 10</span>';
-    } else if (game.hot) {
-      badgeHtml = '<span class="card-badge-top badge-hot">🔥 HOT</span>';
-    } else if (game.tags.includes('2 Player')) {
-      badgeHtml = '<span class="card-badge-top badge-2p">👥 2P</span>';
-    }
+  const boxCategories = [
+    { key: 'action', title: 'Action & Duels' },
+    { key: 'sports', title: 'Sports & 2-Player' },
+    { key: 'puzzle', title: 'Puzzle & Logic' },
+    { key: 'driving', title: 'Motorsport & Driving' },
+    { key: 'arcade', title: 'Arcade Classics' },
+    { key: 'skill', title: 'Skill & Speed' }
+  ];
+
+  container.innerHTML = boxCategories.map(cat => {
+    const gamesInCat = GAMES.filter(g => g.cat === cat.key);
+    const top2 = gamesInCat.slice(0, 2);
+    const rest = gamesInCat.slice(2);
 
     return `
-      <div class="game-card" style="--card-accent: ${game.color}" onclick="openGame('${game.id}')">
-        <div class="card-thumbnail">
-          <img src="${game.thumbnail}" alt="${game.title}" class="card-thumb-img" loading="lazy" onerror="this.src='assets/icons/slope.webp'">
-          <div class="card-play-overlay">
-            <span class="card-play-badge">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>
-              PLAY
-            </span>
-          </div>
-          ${badgeHtml}
-          <button class="card-fav-btn ${fav ? 'is-fav' : ''}" onclick="toggleFavorite('${game.id}', event)" title="Favorite">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="${fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-          </button>
+      <div class="mc-panel mc-cat-box">
+        <div class="mc-panel-header">
+          <span class="mc-panel-title">${TAB_ICONS[cat.key] || '🎮'} ${cat.title}</span>
+          <a href="#" class="mc-panel-link" onclick="filterByNav('${cat.key}'); return false;">See All »</a>
         </div>
-        <div class="card-body">
-          <h3 class="card-title">${game.title}</h3>
-          <div class="card-meta-row">
-            <span class="card-category">${catName}</span>
-            ${hs > 0 ? `<span class="card-highscore">BEST: ${hs}</span>` : '<span class="card-rating">★ 4.8</span>'}
+        <div class="mc-cat-content">
+          <!-- 2 Prominent Thumbnails -->
+          <div class="mc-cat-thumbs-row">
+            ${top2.map(g => `
+              <div class="mc-cat-thumb-card" onclick="openGame('${g.id}')">
+                <img src="${g.thumbnail}" alt="${g.title}" class="mc-cat-thumb-img" onerror="this.src='games/slope/slope4.jpeg'">
+                <span class="mc-cat-thumb-title">${g.title}</span>
+              </div>
+            `).join('')}
           </div>
+
+          <!-- Clickable Link List of Other Games -->
+          ${rest.length > 0 ? `
+            <ul class="mc-cat-links-list">
+              ${rest.map(g => `
+                <li>
+                  <a href="#" class="mc-cat-link-item" onclick="openGame('${g.id}'); return false;">${g.title}</a>
+                </li>
+              `).join('')}
+            </ul>
+          ` : ''}
         </div>
       </div>
     `;
   }).join('');
 }
 
-function resetFilters() {
-  activeCategory = 'all';
-  activeFilter = null;
-  searchQuery = '';
-  const input = document.getElementById('searchInput');
-  const clearBtn = document.getElementById('searchClearBtn');
-  if (input) input.value = '';
-  if (clearBtn) clearBtn.style.display = 'none';
-  initNav();
-  document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
-  renderGrid();
+// DIRECTORY VIEW (ALL GAMES / SEARCH / FILTER GRID)
+function renderDirectory() {
+  const grid = document.getElementById('directoryGrid');
+  const countEl = document.getElementById('dirHeaderCount');
+  if (!grid) return;
+
+  let list = [...GAMES];
+
+  // 1. Search Query
+  if (activeSearchQuery) {
+    list = list.filter(g => 
+      g.title.toLowerCase().includes(activeSearchQuery) ||
+      g.desc.toLowerCase().includes(activeSearchQuery) ||
+      g.tags.some(t => t.toLowerCase().includes(activeSearchQuery))
+    );
+  } 
+  // 2. Favorites Mode
+  else if (activeFilterMode === 'favorites') {
+    const favs = getFavorites();
+    list = list.filter(g => favs.includes(g.id));
+  }
+  // 3. Category Filter
+  else if (currentTab && currentTab !== 'all' && currentTab !== 'home') {
+    list = list.filter(g => g.cat === currentTab);
+  }
+
+  if (countEl) {
+    countEl.textContent = `${list.length} Games`;
+  }
+
+  if (list.length === 0) {
+    grid.innerHTML = `
+      <div class="mc-empty-state" style="grid-column: 1 / -1;">
+        <h3>No games match your search</h3>
+        <p>Try searching for a different title or browse all categories.</p>
+        <button class="mc-empty-btn" onclick="showAllGames()">View All 42 Games</button>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = list.map(g => {
+    const fav = isFavorite(g.id);
+    const catName = CATEGORIES[g.cat]?.name || 'Arcade';
+
+    return `
+      <div class="mc-game-card" onclick="openGame('${g.id}')">
+        <button class="mc-card-fav-star ${fav ? 'is-fav' : ''}" onclick="toggleFavorite('${g.id}', event)" title="Favorite">
+          ★
+        </button>
+        <div class="mc-card-thumb-wrap">
+          <img src="${g.thumbnail}" alt="${g.title}" class="mc-card-thumb" loading="lazy" onerror="this.src='games/slope/slope4.jpeg'">
+          <div class="mc-card-play-hover">
+            <span class="mc-card-play-badge">▶ PLAY</span>
+          </div>
+        </div>
+        <div class="mc-card-title">${g.title}</div>
+        <div class="mc-card-meta">
+          <span class="mc-card-cat">${catName}</span>
+          <span style="color: #ff9800; font-weight: 700;">★ 4.8</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // RANDOM GAME
-function playRandom() {
-  const randomGame = GAMES[Math.floor(Math.random() * GAMES.length)];
-  if (window.RaptorSound) window.RaptorSound.playClear();
-  openGame(randomGame.id);
+function playRandomGame() {
+  if (window.RaptorSound) window.RaptorSound.playBlip(600);
+  const randomIndex = Math.floor(Math.random() * GAMES.length);
+  openGame(GAMES[randomIndex].id);
 }
 
-// HELPER: FORMAT CONTROLS AS KEYCAPS
+// FORMAT CONTROLS AS KEYCAPS
 function formatKeycaps(keyStr) {
-  // Split parts like 'WASD / Arrows' or 'Space' or 'Click'
   return keyStr.split('/').map(part => {
     part = part.trim();
-    if (part.length <= 4 && !part.includes(' ')) {
-      return `<kbd class="keycap">${part}</kbd>`;
-    }
     return `<kbd class="keycap">${part}</kbd>`;
-  }).join('<span style="color:var(--text-muted);font-weight:400;margin:0 2px;">/</span>');
+  }).join('<span style="color:#7fa0bf;margin:0 2px;">/</span>');
 }
 
-// FRIV-STYLE GAME THEATER / PLAYER
+// THEATER PLAYER MODAL
 function openGame(id) {
   const game = GAMES.find(g => g.id === id);
   if (!game) return;
 
-  currentGameId = id;
-  recordRecentGame(id);
-  if (window.RaptorSound) window.RaptorSound.playClick();
+  activeGameId = id;
+  if (window.RaptorSound) window.RaptorSound.playSuccess();
 
   const modal = document.getElementById('playerModal');
   const iframe = document.getElementById('gameIframe');
-  const titleEl = document.getElementById('playerGameTitle');
-  const catEl = document.getElementById('playerGameCat');
-  const hsEl = document.getElementById('player-hs-val');
-  const thumbEl = document.getElementById('playerThumb');
-  const descEl = document.getElementById('guideDesc');
-  const keysEl = document.getElementById('guideKeys');
-  const trayEl = document.getElementById('trayList');
-  const glowEl = document.getElementById('stageAmbientGlow');
+  const thumb = document.getElementById('playerThumb');
+  const title = document.getElementById('playerGameTitle');
+  const cat = document.getElementById('playerGameCat');
+  const hs = document.getElementById('playerHsVal');
+  const desc = document.getElementById('guideDesc');
+  const keys = document.getElementById('guideKeys');
+  const tray = document.getElementById('trayList');
 
-  // Set ambient glow color
-  if (glowEl) {
-    glowEl.style.setProperty('--stage-color', game.color || '#ff4757');
-  }
+  if (title) title.textContent = game.title;
+  if (cat) cat.textContent = CATEGORIES[game.cat]?.name || 'Game';
+  if (hs) hs.textContent = getHighScore(id);
+  if (desc) desc.textContent = game.instructions || game.desc;
+  if (thumb) thumb.innerHTML = `<img src="${game.thumbnail}" alt="${game.title}">`;
 
-  // Metadata
-  if (titleEl) titleEl.textContent = game.title;
-  if (catEl) catEl.textContent = CATEGORIES[game.cat]?.name || 'Arcade';
-  if (hsEl) hsEl.textContent = getHighScore(game.id);
-  if (thumbEl) {
-    thumbEl.innerHTML = `<img src="${game.thumbnail}" alt="${game.title}" class="player-thumb-img" onerror="this.src='assets/icons/slope.webp'">`;
-  }
-  if (descEl) descEl.textContent = game.instructions;
-
-  // Controls Key Badges with 3D Keycaps
-  if (keysEl) {
-    keysEl.innerHTML = game.controls.map(c => `
+  // Controls Keys
+  if (keys) {
+    keys.innerHTML = game.controls.map(c => `
       <div class="key-badge">
-        <span class="keycap-wrap">${formatKeycaps(c.key)}</span>
+        <span>${formatKeycaps(c.key)}</span>
         <span class="key-action">${c.action}</span>
       </div>
     `).join('');
   }
 
-  // Related Up Next Tray (4 games in same category or popular)
-  if (trayEl) {
-    const related = GAMES.filter(g => g.id !== id && (g.cat === game.cat || g.hot)).slice(0, 4);
-    trayEl.innerHTML = related.map(rel => `
-      <div class="tray-card" onclick="openGame('${rel.id}')">
-        <div class="tray-thumb">
-          <img src="${rel.thumbnail}" alt="${rel.title}" class="tray-thumb-img" onerror="this.src='assets/icons/slope.webp'">
-        </div>
-        <div class="tray-title">${rel.title}</div>
+  // Related tray (4 games in same category or popular)
+  if (tray) {
+    const related = GAMES.filter(g => g.id !== id && (g.cat === game.cat || g.hot)).slice(0, 5);
+    tray.innerHTML = related.map(rel => `
+      <div class="tray-item" onclick="openGame('${rel.id}')">
+        <img src="${rel.thumbnail}" alt="${rel.title}" class="tray-thumb">
+        <span class="tray-name">${rel.title}</span>
       </div>
     `).join('');
   }
 
-  updatePlayerFavButton();
+  updatePlayerFavBtn();
 
-  // Load Iframe
+  // Load game in iframe
   if (iframe) {
     iframe.src = `games/${game.id}/index.html`;
     setTimeout(() => {
       try { iframe.contentWindow.focus(); } catch (e) {}
-    }, 250);
+    }, 200);
   }
 
-  modal.classList.add('active');
+  if (modal) modal.classList.add('active');
   document.body.style.overflow = 'hidden';
 
-  // Update URL state without page reload
-  window.history.replaceState({}, '', `?game=${game.id}`);
+  // Update URL query string (?game=id)
+  window.history.replaceState({ game: id }, '', `?game=${id}`);
 }
 
 function closePlayer() {
@@ -455,52 +559,32 @@ function closePlayer() {
   if (iframe) iframe.src = 'about:blank';
   if (modal) modal.classList.remove('active');
   document.body.style.overflow = '';
-  currentGameId = null;
+  activeGameId = null;
 
   window.history.replaceState({}, '', window.location.pathname);
-  renderGrid();
 }
 
-function updatePlayerFavButton() {
+function updatePlayerFavBtn() {
   const btn = document.getElementById('playerFavBtn');
-  if (!btn || !currentGameId) return;
-  const fav = isFavorite(currentGameId);
-  btn.innerHTML = `
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="${fav ? '#ff1744' : 'none'}" stroke="${fav ? '#ff1744' : 'currentColor'}" stroke-width="2">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-    </svg>
-    <span class="pctrl-text">${fav ? 'Favorited' : 'Favorite'}</span>
-  `;
+  if (!btn || !activeGameId) return;
+  const fav = isFavorite(activeGameId);
+  btn.innerHTML = fav ? '★ Saved to Favs' : '☆ Add to Favs';
+  btn.style.color = fav ? '#e65100' : '#005a9c';
 }
 
 function togglePlayerFav() {
-  if (currentGameId) toggleFavorite(currentGameId);
-}
-
-function copyGameLink() {
-  if (!currentGameId) return;
-  const url = `${window.location.origin}${window.location.pathname}?game=${currentGameId}`;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(url).then(() => {
-      const txt = document.getElementById('shareBtnText');
-      if (txt) {
-        const old = txt.textContent;
-        txt.textContent = 'Copied!';
-        setTimeout(() => { txt.textContent = old; }, 1800);
-      }
-    });
-  }
+  if (activeGameId) toggleFavorite(activeGameId);
 }
 
 function restartActiveGame() {
   const iframe = document.getElementById('gameIframe');
   if (iframe) {
-    const current = iframe.src;
+    const src = iframe.src;
     iframe.src = 'about:blank';
     setTimeout(() => {
-      iframe.src = current;
+      iframe.src = src;
       try { iframe.contentWindow.focus(); } catch (e) {}
-    }, 60);
+    }, 50);
   }
 }
 
@@ -515,13 +599,38 @@ function togglePlayerFullscreen() {
   }
 }
 
+function copyGameLink() {
+  if (!activeGameId) return;
+  const url = `${window.location.origin}${window.location.pathname}?game=${activeGameId}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => {
+      const txt = document.getElementById('shareBtnText');
+      if (txt) {
+        txt.textContent = 'Copied!';
+        setTimeout(() => { txt.textContent = 'Share'; }, 1800);
+      }
+    });
+  }
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  if (window.RaptorSound) {
+    window.RaptorSound.enabled = soundEnabled;
+  }
+  const icon = document.getElementById('soundIcon');
+  if (icon) {
+    icon.textContent = soundEnabled ? '🔊 Sound' : '🔇 Muted';
+  }
+}
+
 // Global Keyboard Shortcuts
 window.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && currentGameId) {
+  if (e.key === 'Escape' && activeGameId) {
     closePlayer();
-  } else if ((e.key === 'f' || e.key === 'F') && currentGameId && document.activeElement !== document.getElementById('searchInput')) {
+  } else if ((e.key === 'f' || e.key === 'F') && activeGameId && document.activeElement !== document.getElementById('searchInput')) {
     togglePlayerFullscreen();
-  } else if ((e.key === 'r' || e.key === 'R') && currentGameId && document.activeElement !== document.getElementById('searchInput')) {
+  } else if ((e.key === 'r' || e.key === 'R') && activeGameId && document.activeElement !== document.getElementById('searchInput')) {
     restartActiveGame();
   }
 });
