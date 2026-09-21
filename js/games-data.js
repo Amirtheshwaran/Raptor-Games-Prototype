@@ -131,7 +131,7 @@ const GAMES = [
     color: '#76ff03',
     tags: ['Nitrome', '2 Player', 'Sequel', 'Co-op'],
     thumbnail: 'games/bad-ice-cream-2/bad-ice-cream-2.png',
-    desc: 'The second chilly adventure packed with new exotic fruits, frozen obstacles, clever enemy AI, and 2-player cooperative battles.',
+    desc: 'The second chilly adventure packed with new exotic fruits, frozen obstacles, clever enemy patterns, and 2-player cooperative battles.',
     instructions: 'Devour all fruits on screen while freezing paths or smashing ice columns to outmaneuver patrol beasts.',
     controls: [
       { key: 'Arrow Keys / WASD', action: 'Move Player 1 / 2' },

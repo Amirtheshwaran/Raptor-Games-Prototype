@@ -1,6 +1,6 @@
-﻿/**
+/**
  * Raptor Games — Unified Web Audio API Sound Synthesizer
- * 100% procedural, zero external assets, latency-free.
+ * Native Web Audio API synthesis, zero external dependencies.
  */
 class SoundEngine {
   constructor() {

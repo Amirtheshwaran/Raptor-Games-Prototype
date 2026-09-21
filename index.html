@@ -3,9 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Raptor Games — Fast Free Browser Games</title>
-  <meta name="description" content="Instant in-browser arcade games. 100% free, responsive, no downloads, no ads. Play directly right on the site.">
+  <title>Raptor Games — Instant Free Browser Arcade</title>
+  <meta name="description" content="Play 42 legendary browser games instantly right inside your browser. No downloads, no lag, 100% free.">
+  <meta name="theme-color" content="#0a0d14">
   
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/grid.css">
   <link rel="stylesheet" href="css/player.css">
@@ -15,49 +20,60 @@
   <!-- HEADER -->
   <header class="portal-header">
     <div class="header-container">
-      <a href="index.html" class="brand-link" onclick="resetFilters(); return false;">
-        <svg class="brand-icon-svg" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="36" height="36" rx="8" fill="#182033" stroke="#ff5722" stroke-width="1.5"/>
-          <path d="M9 25L14 11L22 17L27 9L25 24L18 20L13 26L9 25Z" fill="#ff5722"/>
-          <circle cx="15" cy="14" r="2" fill="#ffd600"/>
-        </svg>
+      <a href="index.html" class="brand-link" onclick="resetFilters(); return false;" title="Raptor Games Home">
+        <div class="brand-logo-icon">
+          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="36" height="36" rx="10" fill="url(#logo-grad)"/>
+            <path d="M10 26L15 10L22 17L28 8L25 25L18 21L14 27L10 26Z" fill="#ffffff"/>
+            <circle cx="16" cy="14" r="2.2" fill="#ffd600"/>
+            <defs>
+              <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ff3b30"/>
+                <stop offset="100%" stop-color="#ff5e3a"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
         <div class="brand-text">
           <div class="brand-title">RAPTOR<span>GAMES</span></div>
           <span class="brand-tag">Instant Arcade</span>
         </div>
       </a>
 
+      <!-- SEARCH BAR -->
       <div class="search-wrapper">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="text" id="searchInput" class="search-input" placeholder="Search 42 arcade & browser games..." autocomplete="off" spellcheck="false">
-        <span class="search-kbd">/</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search 42 games (e.g. Moto X3M, Slope, 2048)..." autocomplete="off" spellcheck="false">
+        <button id="searchClearBtn" class="search-clear-btn" title="Clear search" onclick="clearSearch()" style="display:none;">✕</button>
+        <span class="search-kbd" title="Press / to search">/</span>
       </div>
 
+      <!-- HEADER ACTIONS -->
       <div class="header-actions">
-        <button class="action-btn" data-filter="favorites" onclick="setFilter('favorites')">
+        <button class="action-btn" data-filter="favorites" onclick="setFilter('favorites')" title="View your saved favorites">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           </svg>
           <span>Favorites (<span id="fav-count">0</span>)</span>
         </button>
 
-        <button class="action-btn" data-filter="recent" onclick="setFilter('recent')">
+        <button class="action-btn" data-filter="recent" onclick="setFilter('recent')" title="Recently played games">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
           </svg>
           <span>Recent</span>
         </button>
 
-        <button class="action-btn" onclick="playRandom()">
+        <button class="action-btn action-btn-random" onclick="playRandom()" title="Play a random surprise game">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>
           </svg>
           <span>Random</span>
         </button>
 
-        <button class="action-btn" id="soundToggleBtn">
+        <button class="action-btn" id="soundToggleBtn" title="Toggle audio sound effects">
           <!-- Populated by sound.js -->
         </button>
       </div>
@@ -67,29 +83,35 @@
   <!-- CATEGORY TABS -->
   <nav class="nav-bar">
     <div class="nav-container" id="navContainer">
-      <!-- Populated by portal.js -->
+      <!-- Populated dynamically by portal.js -->
     </div>
   </nav>
 
   <!-- MAIN BODY -->
   <main class="main-wrapper">
 
-    <!-- FEATURED STRIP -->
+    <!-- HERO FEATURED SHOWCASE -->
     <section class="hero-strip" id="heroStrip">
       <div class="featured-card" id="heroCard">
         <div class="featured-info">
-          <div class="featured-tag">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Featured Game
+          <div class="featured-badge-row">
+            <span class="featured-tag">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              GAME OF THE WEEK
+            </span>
+            <span class="featured-rating">★ 4.9 / 5.0</span>
           </div>
           <h2 class="featured-title" id="featTitle">Moto X3M</h2>
           <p class="featured-desc" id="featDesc">The ultimate motorbike stunt racing game. Speed through lethal loops, explosive TNT barrels, and nail insane flips to beat the clock.</p>
           <div class="featured-meta">
             <button class="play-now-btn">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>
               PLAY NOW — FREE
             </button>
-            <span style="font-size: 0.8rem; color: var(--text-muted);" id="featCat">Driving</span>
+            <div class="featured-meta-info">
+              <span id="featCat" class="featured-cat-badge">Driving & Stunts</span>
+              <span class="featured-players-count">⚡ Instant In-Browser Play</span>
+            </div>
           </div>
         </div>
         <div class="featured-art" id="featArt">
@@ -97,25 +119,33 @@
         </div>
       </div>
 
+      <!-- SIDE HIGHLIGHTS -->
       <div class="side-highlights">
         <div class="highlight-box" id="sideHighlight1">
           <div class="highlight-thumb">
             <img src="games/slope/slope4.jpeg" alt="Slope" class="highlight-img">
           </div>
           <div class="highlight-details">
-            <div class="highlight-cat">SKILL</div>
+            <span class="highlight-badge badge-trending">TRENDING #1</span>
             <div class="highlight-title">Slope</div>
             <div class="highlight-sub">3D Speed • Endless Downhill</div>
           </div>
+          <div class="highlight-play-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="7,5 19,12 7,19"/></svg>
+          </div>
         </div>
+
         <div class="highlight-box" id="sideHighlight2">
           <div class="highlight-thumb">
             <img src="games/fireboywatergirlforesttemple/logo.jpeg" alt="Fireboy & Watergirl" class="highlight-img">
           </div>
           <div class="highlight-details">
-            <div class="highlight-cat">PUZZLE</div>
+            <span class="highlight-badge badge-coop">CO-OP HIT</span>
             <div class="highlight-title">Fireboy & Watergirl</div>
-            <div class="highlight-sub">Co-op • Forest Temple</div>
+            <div class="highlight-sub">2-Player • Forest Temple</div>
+          </div>
+          <div class="highlight-play-icon">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="7,5 19,12 7,19"/></svg>
           </div>
         </div>
       </div>
@@ -123,16 +153,18 @@
 
     <!-- SECTION TITLE & COUNT -->
     <div class="section-header">
-      <div class="section-title">
+      <div class="section-title-wrap">
         <div class="section-indicator"></div>
-        <span id="sectionTitle">All Playable Games</span>
+        <h2 class="section-title" id="sectionTitle">All Playable Games</h2>
       </div>
-      <div class="section-count" id="sectionCount">42 Games Available</div>
+      <div class="section-meta-right">
+        <span class="section-count" id="sectionCount">42 Games Available</span>
+      </div>
     </div>
 
     <!-- GAMES GRID -->
     <div class="games-grid" id="gamesGrid">
-      <!-- Cards populated by portal.js -->
+      <!-- Cards dynamically populated by portal.js -->
     </div>
 
   </main>
@@ -140,17 +172,23 @@
   <!-- FOOTER -->
   <footer class="portal-footer">
     <div class="footer-container">
-      <div class="footer-brand">
-        <span style="color: var(--brand-primary);">RAPTOR</span> GAMES
+      <div class="footer-brand-wrap">
+        <div class="footer-brand">
+          <span style="color: var(--brand-primary);">RAPTOR</span> GAMES
+        </div>
+        <p class="footer-tagline">
+          Clean, fast, unblocked browser game catalog. Built for pure arcade enjoyment with zero ads, zero trackers, and zero bloat.
+        </p>
       </div>
-      <p class="footer-desc">
-        Instant, unblocked HTML5 arcade portal. Every game is 100% playable in-browser with zero external redirects, zero dependencies, and persistent high scores.
-      </p>
-      <div class="footer-links">
-        <span>Keyboard Shortcuts: <code>/</code> Search • <code>Esc</code> Close Game • <code>F</code> Fullscreen • <code>R</code> Restart</span>
+      <div class="footer-shortcuts">
+        <span class="shortcuts-title">Keyboard Shortcuts:</span>
+        <span class="shortcut-item"><kbd>/</kbd> Search</span>
+        <span class="shortcut-item"><kbd>Esc</kbd> Close Player</span>
+        <span class="shortcut-item"><kbd>F</kbd> Fullscreen</span>
+        <span class="shortcut-item"><kbd>R</kbd> Restart</span>
       </div>
       <p class="footer-copy">
-        © Raptor Games. Built for pure arcade enjoyment.
+        All games are the intellectual property of their respective creators and studios. Distributed for free web play.
       </p>
     </div>
   </footer>
@@ -164,10 +202,13 @@
         <div class="player-game-meta">
           <div class="player-game-thumb" id="playerThumb"></div>
           <div class="player-title-box">
-            <h2 class="player-title" id="playerGameTitle">Game Title</h2>
+            <div class="player-title-row">
+              <h2 class="player-title" id="playerGameTitle">Game Title</h2>
+              <span class="player-verified-badge" title="Verified Web Build">✓ Verified</span>
+            </div>
             <div class="player-subtitle">
-              <span id="playerGameCat">Category</span> • 
-              <span>HIGH SCORE: <strong class="player-hs" id="player-hs-val">0</strong></span>
+              <span id="playerGameCat" class="player-cat-pill">Category</span>
+              <span class="player-hs-label">HIGH SCORE: <strong class="player-hs" id="player-hs-val">0</strong></span>
             </div>
           </div>
         </div>
@@ -175,34 +216,44 @@
         <div class="player-controls-group">
           <button class="pctrl-btn" onclick="restartActiveGame()" title="Restart Game (R)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            <span>Restart</span>
+            <span class="pctrl-text">Restart</span>
           </button>
 
           <button class="pctrl-btn" id="playerFavBtn" onclick="togglePlayerFav()" title="Bookmark to Favorites">
             <!-- Populated dynamically -->
           </button>
 
-          <button class="pctrl-btn" onclick="togglePlayerFullscreen()" title="Fullscreen (F)">
+          <button class="pctrl-btn" onclick="copyGameLink()" title="Copy direct link to this game">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span class="pctrl-text" id="shareBtnText">Share</span>
+          </button>
+
+          <button class="pctrl-btn" onclick="togglePlayerFullscreen()" title="Toggle Fullscreen (F)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-            <span>Fullscreen</span>
+            <span class="pctrl-text">Fullscreen</span>
           </button>
 
           <button class="pctrl-btn btn-close" onclick="closePlayer()" title="Close to Catalog (Esc)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            <span>Close</span>
+            <span class="pctrl-text">Close</span>
           </button>
         </div>
       </div>
 
-      <!-- GAME CANVAS STAGE -->
-      <div class="game-stage-wrapper" id="gameStageWrapper">
-        <iframe id="gameIframe" class="game-iframe" allow="autoplay; fullscreen; gamepad; focus-without-user-activation *" loading="eager"></iframe>
+      <!-- GAME STAGE WITH BACKLIGHT -->
+      <div class="game-stage-outer">
+        <div class="stage-ambient-glow" id="stageAmbientGlow"></div>
+        <div class="game-stage-wrapper" id="gameStageWrapper">
+          <iframe id="gameIframe" class="game-iframe" allow="autoplay; fullscreen; gamepad; focus-without-user-activation *" loading="eager"></iframe>
+        </div>
       </div>
 
-      <!-- BOTTOM DETAILS & UP NEXT -->
+      <!-- BOTTOM DETAILS & UP NEXT TRAY -->
       <div class="player-bottom-panel">
         <div class="guide-box">
-          <h4>How to Play & Controls</h4>
+          <div class="guide-header-row">
+            <h4>How to Play & Controls</h4>
+          </div>
           <p class="guide-desc" id="guideDesc">Instructions loading...</p>
           <div class="guide-keys" id="guideKeys">
             <!-- Key badges populated by portal.js -->
@@ -210,7 +261,9 @@
         </div>
 
         <div class="tray-box">
-          <h4>Up Next & Similar Games</h4>
+          <div class="tray-header-row">
+            <h4>More Games Like This</h4>
+          </div>
           <div class="tray-list" id="trayList">
             <!-- Tray cards populated by portal.js -->
           </div>

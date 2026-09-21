@@ -1,7 +1,17 @@
 /**
  * Raptor Games — Portal Controller
- * Friv-style game theater, instant loading, rich game catalog, sound & persistence.
+ * Instant-play browser arcade architecture with audio synthesis and local persistence.
  */
+
+const CATEGORIES = {
+  all: { name: 'All Games', icon: '🌐' },
+  driving: { name: 'Driving & Stunts', icon: '🏎️' },
+  action: { name: 'Action & Duels', icon: '⚡' },
+  sports: { name: 'Sports & 2P', icon: '🏀' },
+  puzzle: { name: 'Puzzle & Logic', icon: '🧩' },
+  arcade: { name: 'Arcade Classics', icon: '🕹️' },
+  skill: { name: 'Skill & Speed', icon: '🎯' }
+};
 
 let activeCategory = 'all';
 let searchQuery = '';
@@ -89,14 +99,18 @@ function initNav() {
   container.innerHTML = '';
   Object.entries(CATEGORIES).forEach(([key, cat]) => {
     const btn = document.createElement('button');
-    btn.className = 'cat-pill' + (key === activeCategory ? ' active' : '');
+    btn.className = 'cat-pill' + (key === activeCategory && !activeFilter ? ' active' : '');
     btn.dataset.cat = key;
     
     let count = key === 'all' ? GAMES.length : GAMES.filter(g => g.cat === key).length;
-    btn.innerHTML = `<span>${cat.name}</span><span class="cat-pill-count">${count}</span>`;
+    btn.innerHTML = `
+      <span class="cat-pill-icon">${cat.icon}</span>
+      <span>${cat.name}</span>
+      <span class="cat-pill-count">${count}</span>
+    `;
     
     btn.onclick = () => {
-      if (window.RaptorSound) window.RaptorSound.playBlip(440);
+      if (window.RaptorSound) window.RaptorSound.playBlip(480);
       setCategory(key);
     };
     container.appendChild(btn);
@@ -117,6 +131,7 @@ function setFilter(filterType) {
   if (activeFilter === filterType) {
     activeFilter = null;
     document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.cat-pill[data-cat="${activeCategory}"]`)?.classList.add('active');
   } else {
     activeFilter = filterType;
     document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
@@ -124,7 +139,7 @@ function setFilter(filterType) {
       b.classList.toggle('active', b.dataset.filter === filterType);
     });
   }
-  if (window.RaptorSound) window.RaptorSound.playBlip(520);
+  if (window.RaptorSound) window.RaptorSound.playBlip(540);
   renderGrid();
 }
 
@@ -136,10 +151,14 @@ function updateFavoritesCounter() {
 // SEARCH
 function initSearch() {
   const input = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('searchClearBtn');
   if (!input) return;
 
   input.addEventListener('input', e => {
     searchQuery = e.target.value.trim().toLowerCase();
+    if (clearBtn) {
+      clearBtn.style.display = searchQuery ? 'flex' : 'none';
+    }
     renderGrid();
   });
 
@@ -150,6 +169,18 @@ function initSearch() {
       input.focus();
     }
   });
+}
+
+function clearSearch() {
+  const input = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('searchClearBtn');
+  if (input) {
+    input.value = '';
+    searchQuery = '';
+    input.focus();
+  }
+  if (clearBtn) clearBtn.style.display = 'none';
+  renderGrid();
 }
 
 // CONTROLS & SOUND TOGGLE
@@ -172,7 +203,7 @@ function initControls() {
   }
 }
 
-// FEATURED HERO STRIP
+// FEATURED HERO SHOWCASE
 function renderFeatured() {
   const featured = GAMES.find(g => g.id === 'motox3m') || GAMES[0];
   const side1 = GAMES.find(g => g.id === 'slope') || GAMES[1];
@@ -185,7 +216,7 @@ function renderFeatured() {
     document.getElementById('featDesc').textContent = featured.desc;
     document.getElementById('featCat').textContent = CATEGORIES[featured.cat]?.name || 'Featured';
     document.getElementById('featArt').innerHTML = `
-      <img src="${featured.thumbnail}" alt="${featured.title}" class="hero-art-img" onerror="this.style.display='none'">
+      <img src="${featured.thumbnail}" alt="${featured.title}" class="hero-art-img" onerror="this.src='assets/icons/slope.webp'">
     `;
   }
 
@@ -193,10 +224,9 @@ function renderFeatured() {
   if (s1 && side1) {
     s1.onclick = () => openGame(side1.id);
     s1.querySelector('.highlight-title').textContent = side1.title;
-    s1.querySelector('.highlight-cat').textContent = CATEGORIES[side1.cat]?.name || 'Skill';
     s1.querySelector('.highlight-sub').textContent = side1.tags.slice(0, 3).join(' • ');
     s1.querySelector('.highlight-thumb').innerHTML = `
-      <img src="${side1.thumbnail}" alt="${side1.title}" class="highlight-img" onerror="this.style.display='none'">
+      <img src="${side1.thumbnail}" alt="${side1.title}" class="highlight-img" onerror="this.src='assets/icons/slope.webp'">
     `;
   }
 
@@ -204,10 +234,9 @@ function renderFeatured() {
   if (s2 && side2) {
     s2.onclick = () => openGame(side2.id);
     s2.querySelector('.highlight-title').textContent = side2.title;
-    s2.querySelector('.highlight-cat').textContent = CATEGORIES[side2.cat]?.name || 'Puzzle';
     s2.querySelector('.highlight-sub').textContent = side2.tags.slice(0, 3).join(' • ');
     s2.querySelector('.highlight-thumb').innerHTML = `
-      <img src="${side2.thumbnail}" alt="${side2.title}" class="highlight-img" onerror="this.style.display='none'">
+      <img src="${side2.thumbnail}" alt="${side2.title}" class="highlight-img" onerror="this.src='assets/icons/slope.webp'">
     `;
   }
 }
@@ -229,18 +258,21 @@ function renderGrid() {
       g.tags.some(t => t.toLowerCase().includes(searchQuery))
     );
     if (titleEl) titleEl.textContent = `Search results for "${searchQuery}"`;
+    if (countEl) countEl.textContent = `${filtered.length} Games Found`;
   } 
   // 2. Favorites Filter
   else if (activeFilter === 'favorites') {
     const favs = getFavorites();
     filtered = filtered.filter(g => favs.includes(g.id));
     if (titleEl) titleEl.textContent = 'Your Favorite Games';
+    if (countEl) countEl.textContent = `${filtered.length} Saved Favorites`;
   } 
   // 3. Recently Played Filter
   else if (activeFilter === 'recent') {
     const recents = getRecentGames();
     filtered = recents.map(id => GAMES.find(g => g.id === id)).filter(Boolean);
-    if (titleEl) titleEl.textContent = 'Recently Played';
+    if (titleEl) titleEl.textContent = 'Recently Played Games';
+    if (countEl) countEl.textContent = `${filtered.length} Games Played`;
   } 
   // 4. Category Filter
   else {
@@ -250,9 +282,8 @@ function renderGrid() {
     } else {
       if (titleEl) titleEl.textContent = 'All Playable Games';
     }
+    if (countEl) countEl.textContent = `${filtered.length} Games Available`;
   }
-
-  if (countEl) countEl.textContent = `${filtered.length} Games Available`;
 
   // Empty State
   if (filtered.length === 0) {
@@ -261,9 +292,9 @@ function renderGrid() {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <h3>No games match your criteria</h3>
-        <p>Try searching for a different title, or clear your current filter.</p>
-        <button class="play-now-btn" onclick="resetFilters()">Browse All Games</button>
+        <h3>No games match your search</h3>
+        <p>Try searching for a different game title, genre tag, or clear your current filters.</p>
+        <button class="play-now-btn" onclick="resetFilters()">Browse All 42 Games</button>
       </div>
     `;
     return;
@@ -273,6 +304,15 @@ function renderGrid() {
     const fav = isFavorite(game.id);
     const hs = getHighScore(game.id);
     const catName = CATEGORIES[game.cat]?.name || 'Arcade';
+
+    let badgeHtml = '';
+    if (game.featured) {
+      badgeHtml = '<span class="card-badge-top badge-featured">★ TOP 10</span>';
+    } else if (game.hot) {
+      badgeHtml = '<span class="card-badge-top badge-hot">🔥 HOT</span>';
+    } else if (game.tags.includes('2 Player')) {
+      badgeHtml = '<span class="card-badge-top badge-2p">👥 2P</span>';
+    }
 
     return `
       <div class="game-card" style="--card-accent: ${game.color}" onclick="openGame('${game.id}')">
@@ -284,7 +324,7 @@ function renderGrid() {
               PLAY
             </span>
           </div>
-          ${game.hot ? '<span class="card-badge-top badge-hot">HOT</span>' : ''}
+          ${badgeHtml}
           <button class="card-fav-btn ${fav ? 'is-fav' : ''}" onclick="toggleFavorite('${game.id}', event)" title="Favorite">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="${fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
@@ -292,14 +332,10 @@ function renderGrid() {
           </button>
         </div>
         <div class="card-body">
+          <h3 class="card-title">${game.title}</h3>
           <div class="card-meta-row">
             <span class="card-category">${catName}</span>
-            ${hs > 0 ? `<span class="card-highscore">BEST: ${hs}</span>` : ''}
-          </div>
-          <h3 class="card-title">${game.title}</h3>
-          <p class="card-desc">${game.desc}</p>
-          <div class="card-controls">
-            ${game.controls.slice(0, 2).map(c => `<span class="control-pill">${c.key}</span>`).join('')}
+            ${hs > 0 ? `<span class="card-highscore">BEST: ${hs}</span>` : '<span class="card-rating">★ 4.8</span>'}
           </div>
         </div>
       </div>
@@ -312,7 +348,9 @@ function resetFilters() {
   activeFilter = null;
   searchQuery = '';
   const input = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('searchClearBtn');
   if (input) input.value = '';
+  if (clearBtn) clearBtn.style.display = 'none';
   initNav();
   document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
   renderGrid();
@@ -323,6 +361,18 @@ function playRandom() {
   const randomGame = GAMES[Math.floor(Math.random() * GAMES.length)];
   if (window.RaptorSound) window.RaptorSound.playClear();
   openGame(randomGame.id);
+}
+
+// HELPER: FORMAT CONTROLS AS KEYCAPS
+function formatKeycaps(keyStr) {
+  // Split parts like 'WASD / Arrows' or 'Space' or 'Click'
+  return keyStr.split('/').map(part => {
+    part = part.trim();
+    if (part.length <= 4 && !part.includes(' ')) {
+      return `<kbd class="keycap">${part}</kbd>`;
+    }
+    return `<kbd class="keycap">${part}</kbd>`;
+  }).join('<span style="color:var(--text-muted);font-weight:400;margin:0 2px;">/</span>');
 }
 
 // FRIV-STYLE GAME THEATER / PLAYER
@@ -343,6 +393,12 @@ function openGame(id) {
   const descEl = document.getElementById('guideDesc');
   const keysEl = document.getElementById('guideKeys');
   const trayEl = document.getElementById('trayList');
+  const glowEl = document.getElementById('stageAmbientGlow');
+
+  // Set ambient glow color
+  if (glowEl) {
+    glowEl.style.setProperty('--stage-color', game.color || '#ff4757');
+  }
 
   // Metadata
   if (titleEl) titleEl.textContent = game.title;
@@ -353,17 +409,17 @@ function openGame(id) {
   }
   if (descEl) descEl.textContent = game.instructions;
 
-  // Controls Key Badges
+  // Controls Key Badges with 3D Keycaps
   if (keysEl) {
     keysEl.innerHTML = game.controls.map(c => `
       <div class="key-badge">
-        <span class="key-name">${c.key}</span>
+        <span class="keycap-wrap">${formatKeycaps(c.key)}</span>
         <span class="key-action">${c.action}</span>
       </div>
     `).join('');
   }
 
-  // Related Up Next Tray (3 similar games in same category or popular)
+  // Related Up Next Tray (4 games in same category or popular)
   if (trayEl) {
     const related = GAMES.filter(g => g.id !== id && (g.cat === game.cat || g.hot)).slice(0, 4);
     trayEl.innerHTML = related.map(rel => `
@@ -383,7 +439,7 @@ function openGame(id) {
     iframe.src = `games/${game.id}/index.html`;
     setTimeout(() => {
       try { iframe.contentWindow.focus(); } catch (e) {}
-    }, 200);
+    }, 250);
   }
 
   modal.classList.add('active');
@@ -413,12 +469,27 @@ function updatePlayerFavButton() {
     <svg viewBox="0 0 24 24" width="16" height="16" fill="${fav ? '#ff1744' : 'none'}" stroke="${fav ? '#ff1744' : 'currentColor'}" stroke-width="2">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
     </svg>
-    <span>${fav ? 'Favorited' : 'Favorite'}</span>
+    <span class="pctrl-text">${fav ? 'Favorited' : 'Favorite'}</span>
   `;
 }
 
 function togglePlayerFav() {
   if (currentGameId) toggleFavorite(currentGameId);
+}
+
+function copyGameLink() {
+  if (!currentGameId) return;
+  const url = `${window.location.origin}${window.location.pathname}?game=${currentGameId}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => {
+      const txt = document.getElementById('shareBtnText');
+      if (txt) {
+        const old = txt.textContent;
+        txt.textContent = 'Copied!';
+        setTimeout(() => { txt.textContent = old; }, 1800);
+      }
+    });
+  }
 }
 
 function restartActiveGame() {
@@ -429,7 +500,7 @@ function restartActiveGame() {
     setTimeout(() => {
       iframe.src = current;
       try { iframe.contentWindow.focus(); } catch (e) {}
-    }, 50);
+    }, 60);
   }
 }
 
